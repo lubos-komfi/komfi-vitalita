@@ -1545,7 +1545,7 @@
                               border: '1px solid var(--color-border)'
                             }}
                           >
-                            {getCategoryEmoji(marker.category)} {marker.name}
+                            <Icon name={getCategoryIcon(marker.category)} size={14} className="inline-block mr-1" />{marker.name}
                           </span>
                         ))
                       }
