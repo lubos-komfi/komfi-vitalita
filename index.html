@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Komfi Vitalita – Prototyp</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Gambarino - display/heading font */
+    @font-face {
+      font-family: 'Gambarino';
+      src: url('/fonts/Gambarino_Complete/Fonts/WEB/fonts/Gambarino-Regular.woff2') format('woff2'),
+           url('/fonts/Gambarino_Complete/Fonts/WEB/fonts/Gambarino-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Satoshi - body font */
+    @font-face {
+      font-family: 'Satoshi';
+      src: url('/fonts/Satoshi_Complete/Fonts/WEB/fonts/Satoshi-Variable.woff2') format('woff2'),
+           url('/fonts/Satoshi_Complete/Fonts/WEB/fonts/Satoshi-Variable.woff') format('woff');
+      font-weight: 300 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Light theme (default) */
+    :root {
+      --color-bg: #f7f5f0;
+      --color-bg-secondary: #ebe8e1;
+      --color-bg-card: #ffffff;
+      --color-bg-card-hover: #fdfcfa;
+      --color-bg-input: #f7f5f0;
+      --color-bg-tag: #f7f5f0;
+      --color-bg-sticky: rgba(247, 245, 240, 0.95);
+
+      --color-text-primary: #2d2d2d;
+      --color-text-secondary: #4a4a4a;
+      --color-text-muted: #8a8279;
+      --color-text-subtle: #a69f94;
+
+      --color-border: #e8e5de;
+      --color-border-light: #f7f5f0;
+
+      --color-terracotta: #c67c4e;
+      --color-terracotta-dark: #a86639;
+      --color-terracotta-light: #d4956b;
+      --color-terracotta-bg: rgba(198, 124, 78, 0.1);
+      --color-terracotta-hover: rgba(198, 124, 78, 0.04);
+
+      --color-sage: #9caa97;
+      --color-sage-bg: rgba(156, 170, 151, 0.1);
+
+      --color-summary-bg: #2d2d2d;
+      --color-summary-text: #ffffff;
+
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 12px 40px -12px rgba(45, 45, 45, 0.12);
+
+      --grain-opacity: 0.03;
+      --grain-blend: multiply;
+    }
+
+    /* Dark theme */
+    .dark {
+      --color-bg: #141414;
+      --color-bg-secondary: #1a1a1a;
+      --color-bg-card: #1e1e1e;
+      --color-bg-card-hover: #252525;
+      --color-bg-input: #252525;
+      --color-bg-tag: #2a2a2a;
+      --color-bg-sticky: rgba(20, 20, 20, 0.95);
+
+      --color-text-primary: #f5f5f5;
+      --color-text-secondary: #d4d4d4;
+      --color-text-muted: #a3a3a3;
+      --color-text-subtle: #737373;
+
+      --color-border: #2e2e2e;
+      --color-border-light: #252525;
+
+      --color-terracotta: #d4956b;
+      --color-terracotta-dark: #c67c4e;
+      --color-terracotta-light: #e0a87d;
+      --color-terracotta-bg: rgba(212, 149, 107, 0.15);
+      --color-terracotta-hover: rgba(212, 149, 107, 0.08);
+
+      --color-sage: #b0c4ab;
+      --color-sage-bg: rgba(176, 196, 171, 0.15);
+
+      --color-summary-bg: #252525;
+      --color-summary-text: #f5f5f5;
+
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+
+      --grain-opacity: 0.02;
+      --grain-blend: overlay;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Satoshi', system-ui, sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .font-display {
+      font-family: 'Gambarino', Georgia, serif;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--color-bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--color-text-subtle); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+    /* Grain overlay */
+    .grain-overlay { position: relative; }
+    .grain-overlay::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: var(--grain-opacity);
+      pointer-events: none;
+      mix-blend-mode: var(--grain-blend);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
+
+    /* Staggered animations */
+    .stagger-1 { animation-delay: 0.05s; }
+    .stagger-2 { animation-delay: 0.1s; }
+    .stagger-3 { animation-delay: 0.15s; }
+    .stagger-4 { animation-delay: 0.2s; }
+
+    /* Card hover */
+    .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+    /* Decorative line */
+    .decorative-line {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--color-terracotta), var(--color-terracotta-light));
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--color-border);
+      border-radius: 12px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: var(--color-bg-card);
+      border-radius: 50%;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .dark .theme-toggle { background: var(--color-terracotta); }
+    .dark .theme-toggle::after { transform: translateX(20px); }
+
+    /* Selection */
+    ::selection { background-color: var(--color-terracotta); color: white; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, createContext, useContext } = React;
+
+    // ============================================
+    // DARK MODE CONTEXT
+    // ============================================
+
+    const ThemeContext = createContext();
+
+    const ThemeProvider = ({ children }) => {
+      const [isDark, setIsDark] = useState(() => {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('vitalita-theme');
+          if (saved) return saved === 'dark';
+          return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        return false;
+      });
+
+      useEffect(() => {
+        document.documentElement.classList.toggle('dark', isDark);
+        localStorage.setItem('vitalita-theme', isDark ? 'dark' : 'light');
+      }, [isDark]);
+
+      const toggleTheme = () => setIsDark(!isDark);
+
+      return (
+        <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+          {children}
+        </ThemeContext.Provider>
+      );
+    };
+
+    const useTheme = () => useContext(ThemeContext);
+
+    // Theme Toggle Component
+    const ThemeToggle = () => {
+      const { isDark, toggleTheme } = useTheme();
+      return (
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle"
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        />
+      );
+    };
+
+    // Komfi Logo
+    const KomfiLogo = ({ className = '' }) => (
+      <svg className={className} viewBox="0 0 569.75 170.24" fill="currentColor">
+        <path d="m502.11,7.86c7.82,0,15.68,4.28,15.68,20.12,0,10.4,8.43,18.82,18.82,18.82s18.82-8.43,18.82-18.82c0,0,2.32-27.32-49.79-27.47-.14-.02-.28-.04-.43-.04-.13,0-.26.03-.39.04h-2.72c-24.85,0-49.9,20.84-49.9,46.59v18.93h-8.71c-1.83,0-3.53,1.25-3.82,3.06-.37,2.3,1.39,4.29,3.62,4.29.34,0,.67.04.99.1h2.99c2.72,0,4.93,2.21,4.93,4.93v68.59c0,6.89-5.59,12.48-12.47,12.48h-3.57c-6.89,0-12.48-5.59-12.48-12.48v-54.59c0-18.44-7.23-38.38-30.91-38.38-13.61,0-23.92,6.31-31.81,15.02-3.27,3.5-5.51,6.82-6.4,8.22-.28.43-.75.7-1.26.7-.67,0-1.25-.45-1.44-1.09-.82-3.28-1.98-6.36-3.54-9.13-.02-.04-.05-.08-.07-.12-4.6-8.11-12.53-13.58-24.77-13.58-16.84,0-29.37,10.26-39.25,23.09-.4.53-1.02.84-1.69.84-1.45,0-2.48-1.42-2.04-2.8l5.32-16.55c.31-.97.04-2.04-.7-2.74l-2.23-2.12c-.9-.86-2.28-.96-3.32-.27-9.98,6.63-19.1,10.51-33.37,12.9-1.29.22-2.25,1.32-2.25,2.62,0,1.47,1.21,2.65,2.68,2.65,12.03,0,13.77,4.9,13.77,13.28v62.07c0,10.07-5.05,11.52-13.98,13.04-1.42.24-2.47,1.48-2.47,2.92h0c0,1.65,1.33,2.98,2.97,2.98h49.9c1.64,0,2.97-1.33,2.97-2.97v-.06c0-1.42-1.02-2.65-2.42-2.91-7.92-1.51-13.28-3.02-13.28-13v-60.82c9.97-13.21,20.69-16.2,27.67-16.2,11.96,0,18.45,8.97,18.45,23.67v53.34c0,10.09-5.06,11.53-14.21,13.05-1.43.24-2.48,1.48-2.48,2.93,0,1.64,1.33,2.97,2.97,2.97h50.65c1.64,0,2.97-1.33,2.97-2.97v-.02c0-1.44-1.05-2.67-2.46-2.92-8.71-1.52-13.74-2.98-13.74-13.03v-60.82c10.22-13.21,19.94-16.2,27.42-16.2,12.71,0,18.69,8.97,18.69,23.67v53.34c0,10.09-5.07,11.53-14.03,13.05-1.39.24-2.42,1.45-2.42,2.86v.13c0,1.6,1.3,2.9,2.9,2.9h113.2c1.6,0,2.9-1.3,2.9-2.9,0-1.47-1.1-2.71-2.57-2.88-13.6-1.57-23.11-2.83-23.11-13.16v-73.52h0v-.1h19.81c1.83,0,3.53-1.25,3.82-3.06.37-2.3-1.39-4.29-3.62-4.29h-14.79c-2.93,0-5.31-2.38-5.31-5.31v-19.46c0-27.45,16.69-33.4,25.31-33.4Z"/>
+        <path d="m567.28,160.02c-8.56-1.51-13.98-2.99-13.98-13.03V61.75c0-.82-.35-1.61-.96-2.17l-2.51-2.28c-1.03-.93-2.44-.81-3.68-.19-12.21,6.17-18.61,6.98-30.55,9.19-1.4.26-2.43,1.45-2.43,2.87s1.05,2.65,2.46,2.88c12.23,2.01,13.99,6.91,13.99,15.35v59.57c0,10.03-5.42,11.51-13.98,13.03-1.42.25-2.47,1.49-2.47,2.94,0,1.65,1.34,2.98,2.98,2.98h50.61c1.65,0,2.98-1.33,2.98-2.98,0-1.44-1.05-2.68-2.47-2.94Z"/>
+        <path d="m184.67,52.43c-33.05,0-59.85,26.37-59.85,58.9s26.79,58.9,59.85,58.9,59.85-26.37,59.85-58.9-26.79-58.9-59.85-58.9Zm0,106.93c-19.08,0-34.55-21.5-34.55-48.02s15.47-48.02,34.55-48.02,34.55,21.5,34.55,48.02-15.47,48.02-34.55,48.02Z"/>
+        <path d="m83.7,92.35h15.71c11.02,0,19.96-8.94,19.96-19.96h0c0-11.02-8.94-19.96-19.96-19.96h0c-11.02,0-19.96,8.94-19.96,19.96v15.71c0,2.35,1.9,4.25,4.25,4.25Z"/>
+        <path d="m129.98,160.15c-13.18-8.72-33.57-34.13-45.77-50.2-6.55-8.63-11.48-13.73-22.29-13.84h-5.24s-.35-.01-.35-.01h-12.55V5.71c0-.88-.36-1.72-1-2.33l-2.62-2.49c-1.07-1.01-2.69-1.18-3.93-.38C25.33,7.63,16.68,11.64,2.77,14.24c-1.23.23-2.32,1.09-2.65,2.31-.52,1.91.73,3.75,2.56,4.04,13.67,2.2,17.31,7.6,17.31,16.88v107.66c0,11.03-4.43,12.65-14.12,14.32-1.77.3-3.01,1.99-2.66,3.84.29,1.58,1.78,2.66,3.39,2.66h49.9c1.61,0,3.1-1.08,3.39-2.66.34-1.84-.9-3.53-2.66-3.84-9.69-1.67-13.44-3.28-13.44-14.32v-38.11c.06-3.47,4.49-4.93,6.58-2.13l7.91,10.55v-.08c9.19,12.19,20.41,27.01,26.17,34.41,2.68,3.44,11.86,16.17,24.11,16.17h20.02c3.01,0,3.91-4.13,1.4-5.79Z"/>
+      </svg>
+    );
+
+    // ============================================
+    // DATA - Biomarkery a balíčky
+    // ============================================
+
+    const biomarkers = {
+      zakladni: {
+        name: "Základní stabilita",
+        question: "Drží tělo rezervy?",
+        focus: ["Výživa", "Zánět", "Základní metabolismus"],
+        markers: [
+          { name: "Krevní obraz", category: "blood", why: "Anémie, infekce, imunita", youWillSee: "Počet červených a bílých krvinek. Uvidíte, jestli máte dost kyslíku v krvi a jak pracuje imunitní systém." },
+          { name: "CRP", category: "inflammation", why: "Zánět v těle", youWillSee: "Číslo 0-10+. Pod 3 = OK, nad 10 = akutní zánět. Trend ukáže, jestli se zánět zhoršuje." },
+          { name: "Albumin", category: "nutrition", why: "Stav výživy, funkce jater", youWillSee: "Hodnota v g/L. Pod 35 = možná podvýživa nebo problém s játry. Důležité pro seniory." },
+          { name: "Glukóza", category: "diabetes", why: "Cukrovka screening", youWillSee: "Hladina cukru nalačno v mmol/L. Nad 7 = prediabetes. Semafor zelená/oranžová/červená." },
+          { name: "Kreatinin + GFR", category: "kidney", why: "Funkce ledvin", youWillSee: "GFR číslo 0-120. Nad 60 = OK, pod 60 = pozor na ledviny. Trend je klíčový." },
+          { name: "Vitamin D", category: "vitamin", why: "Kosti, imunita, nálada", youWillSee: "Hladina v nmol/L. Pod 50 = nedostatek (časté v ČR). Doporučení kolik doplnit." }
+        ]
+      },
+      rizika: {
+        name: "Rizika náhlých zlomů",
+        question: "Hrozí infarkt, mrtvice nebo diabetes?",
+        focus: ["Srdce a cévy", "Cukr", "Krevní tlak"],
+        markers: [
+          { name: "Cholesterol celkový", category: "lipid", why: "Kardio riziko", youWillSee: "Celková hladina cholesterolu v mmol/L. Nad 5 = zvýšené riziko. Ale důležitější je poměr LDL/HDL." },
+          { name: "LDL cholesterol", category: "lipid", why: "'Špatný' cholesterol", youWillSee: "Hladina 'špatného' cholesterolu. Nad 3 = riziko ucpávání cév. Čím nižší, tím lepší." },
+          { name: "HDL cholesterol", category: "lipid", why: "'Dobrý' cholesterol", youWillSee: "Hladina 'dobrého' cholesterolu. Nad 1,2 u žen, nad 1,0 u mužů = OK. Chrání cévy." },
+          { name: "Triglyceridy", category: "lipid", why: "Tuky v krvi", youWillSee: "Tuky z jídla v krvi. Pod 1,7 = OK. Vysoké hodnoty = riziko infarktu." },
+          { name: "HbA1c", category: "diabetes", why: "Dlouhodobý cukr (3 měsíce)", youWillSee: "Průměrná hladina cukru za 3 měsíce. Pod 42 = OK, 42-47 = prediabetes, nad 48 = diabetes." },
+          { name: "Krevní tlak", category: "cardio", why: "Hypertenze", youWillSee: "Systolický/diastolický tlak (např. 130/85). Nad 140/90 = hypertenze. Trend je důležitý." }
+        ]
+      },
+      komplexni: {
+        name: "Komplexní dohled",
+        question: "Děje se něco skrytého?",
+        focus: ["Orgány", "Komplikace", "Skryté poruchy"],
+        markers: [
+          { name: "ALT + AST", category: "liver", why: "Játra - poškození", youWillSee: "Jaterní enzymy v U/L. Nad 45 = možné poškození jater. Ukazuje i problémy z léků." },
+          { name: "GGT + ALP + Bilirubin", category: "liver", why: "Játra komplet", youWillSee: "Kompletní obraz funkce jater a žlučových cest. Bilirubin nad 21 = žloutenka." },
+          { name: "TSH + fT4", category: "thyroid", why: "Štítná žláza", youWillSee: "TSH pod 0,4 = zrychlená štítná žláza, nad 4 = pomalá. fT4 ukazuje aktivitu." },
+          { name: "Minerály (Na, K, Ca, Mg)", category: "mineral", why: "Srdce, svaly, hydratace", youWillSee: "Hladiny klíčových minerálů. Nerovnováha = křeče, únava, srdeční problémy." },
+          { name: "Moč chemicky + sediment", category: "kidney", why: "Ledviny, infekce", youWillSee: "Rozbor moči - bílkoviny, krev, bakterie. Ukazuje infekce a problémy ledvin." },
+          { name: "B12 + Folát", category: "vitamin", why: "Energie, nervy, paměť", youWillSee: "B12 pod 200 = nedostatek (časté u seniorů). Způsobuje únavu a problémy s pamětí." },
+          { name: "Ferritin", category: "blood", why: "Zásoby železa", youWillSee: "Zásoby železa v těle. Pod 30 = vyčerpané zásoby, nad 300 = přebytek (riziko)." },
+          { name: "PSA (muži)", category: "prostate", why: "Prostata screening", youWillSee: "Marker prostaty. Pod 4 = OK, nad 4 = doporučená kontrola u urologa. Trend je klíčový." }
+        ]
+      }
+    };
+
+    // ============================================
+    // Kategorie měření s cenami add-onů
+    // ============================================
+
+    const measurementCategories = {
+      krev: {
+        id: 'krev',
+        name: 'KREV',
+        emoji: '🩸',
+        description: 'Krevní testy',
+        baseIncluded: true, // vždy zahrnuto
+        addonPrice: 0
+      },
+      telMereni: {
+        id: 'telMereni',
+        name: 'TĚL. MĚŘENÍ',
+        emoji: '📏',
+        description: 'Tlak, InBody analýza',
+        baseIncluded: false,
+        addonPrice: 290
+      },
+      grip: {
+        id: 'grip',
+        name: 'GRIP',
+        emoji: '✊',
+        description: 'Síla stisku ruky',
+        baseIncluded: false,
+        addonPrice: 190
+      },
+      kognitivni: {
+        id: 'kognitivni',
+        name: 'KOGNITIVNÍ TESTY',
+        emoji: '🧠',
+        description: 'Paměť a pozornost',
+        baseIncluded: false,
+        addonPrice: 390
+      }
+    };
+
+    // Fyzická měření - stupňovaně podle balíčků
+    const physicalMeasurements = {
+      bloodPressure: {
+        id: 'bloodPressure',
+        name: "Krevní tlak a tep",
+        emoji: "💓",
+        what: "Systolický/diastolický tlak, tepová frekvence",
+        youWillSee: "Čísla tlaku (např. 130/85) + zda je v normě pro váš věk. Trend oproti minulému měření.",
+        why: "Vysoký tlak = tichý zabiják, často bez příznaků"
+      },
+      gripStrength: {
+        id: 'gripStrength',
+        name: "Síla stisku ruky",
+        emoji: "✊",
+        what: "Dynamometr měří sílu v kg",
+        youWillSee: "Vaše síla v kg + porovnání s průměrem pro váš věk a pohlaví. Trend v čase.",
+        why: "Indikátor křehkosti a rizika pádů u seniorů"
+      },
+      inbody: {
+        id: 'inbody',
+        name: "InBody analýza",
+        emoji: "⚖️",
+        what: "Složení těla - svaly, tuk, voda",
+        youWillSee: "Kolik kg svalů, tuku a vody máte. Srovnání s ideálem pro váš věk. Trend úbytku svalů.",
+        why: "Svalová hmota klesá s věkem → riziko pádů a křehkosti"
+      }
+    };
+
+    // ============================================
+    // NOVÉ: Personalizované profily podle person
+    // ============================================
+
+    const profiles = {
+      kardio: {
+        id: 'kardio',
+        name: 'KARDIO',
+        emoji: '💪',
+        tagline: 'Prevence infarktu a diabetu',
+        basePrice: 990,
+        color: '#3B82F6',
+        concerns: ['Cukrovka v rodině', 'Cholesterol', 'Chci zůstat fit'],
+        markers: [
+          // Základ
+          { name: "Krevní obraz", category: "blood", why: "Anémie, infekce, imunita", youWillSee: "Počet červených a bílých krvinek. Uvidíte, jestli máte dost kyslíku v krvi." },
+          { name: "CRP", category: "inflammation", why: "Zánět v těle", youWillSee: "Číslo 0-10+. Pod 3 = OK, nad 10 = zánět. Chronický zánět zvyšuje kardio riziko." },
+          { name: "Glukóza", category: "diabetes", why: "Cukrovka screening", youWillSee: "Hladina cukru nalačno. Nad 7 = prediabetes. Semafor zelená/oranžová/červená." },
+          { name: "Kreatinin + GFR", category: "kidney", why: "Funkce ledvin", youWillSee: "GFR číslo 0-120. Nad 60 = OK. Ledviny trpí při cukrovce." },
+          // Kardio - hlavní focus
+          { name: "Cholesterol celkový", category: "lipid", why: "Kardio riziko", youWillSee: "Celková hladina v mmol/L. Nad 5 = zvýšené riziko." },
+          { name: "LDL cholesterol", category: "lipid", why: "'Špatný' cholesterol", youWillSee: "Hladina 'špatného' cholesterolu. Nad 3 = riziko ucpávání cév." },
+          { name: "HDL cholesterol", category: "lipid", why: "'Dobrý' cholesterol", youWillSee: "Chrání cévy. Nad 1,0 u mužů, nad 1,2 u žen = OK." },
+          { name: "Triglyceridy", category: "lipid", why: "Tuky v krvi", youWillSee: "Pod 1,7 = OK. Vysoké = riziko infarktu." },
+          { name: "HbA1c", category: "diabetes", why: "Dlouhodobý cukr", youWillSee: "Průměr za 3 měsíce. Pod 42 = OK, 42-47 = prediabetes." },
+          // Vitamíny
+          { name: "Vitamin D", category: "vitamin", why: "Kosti, imunita", youWillSee: "Pod 50 nmol/L = nedostatek. Časté v ČR, hlavně v zimě." }
+        ],
+        physicalMeasurementIds: ['bloodPressure'],
+        output: ['Kardio skóre', 'Diabetes riziko', 'Trend report', 'Doporučení']
+      },
+      energie: {
+        id: 'energie',
+        name: 'ENERGIE',
+        emoji: '🏠',
+        tagline: 'Energie, paměť a vitalita',
+        basePrice: 1290,
+        color: '#10B981',
+        concerns: ['Únava a energie', 'Krevní tlak', 'Paměť'],
+        markers: [
+          // Základ
+          { name: "Krevní obraz", category: "blood", why: "Anémie = únava", youWillSee: "Hemoglobin pod 120 u žen, 130 u mužů = anémie. Častá příčina únavy." },
+          { name: "CRP", category: "inflammation", why: "Chronický zánět", youWillSee: "Zánět vysává energii. Pod 3 = OK." },
+          { name: "Glukóza", category: "diabetes", why: "Kolísání energie", youWillSee: "Vysoký cukr = únava po jídle, kolísání energie." },
+          { name: "Kreatinin + GFR", category: "kidney", why: "Ledviny a únava", youWillSee: "Špatné ledviny = hromadění toxinů = únava." },
+          // Kardio
+          { name: "Cholesterol celkový", category: "lipid", why: "Kardio riziko", youWillSee: "Nad 5 = zvýšené riziko." },
+          { name: "LDL cholesterol", category: "lipid", why: "'Špatný' cholesterol", youWillSee: "Nad 3 = riziko ucpávání cév." },
+          { name: "HDL cholesterol", category: "lipid", why: "'Dobrý' cholesterol", youWillSee: "Chrání cévy." },
+          { name: "Triglyceridy", category: "lipid", why: "Tuky v krvi", youWillSee: "Pod 1,7 = OK." },
+          { name: "HbA1c", category: "diabetes", why: "Dlouhodobý cukr", youWillSee: "Průměr za 3 měsíce." },
+          // Energie - hlavní focus
+          { name: "B12 + Folát", category: "vitamin", why: "Energie, paměť", youWillSee: "B12 pod 200 = nedostatek. Způsobuje únavu, problémy s pamětí." },
+          { name: "Ferritin", category: "blood", why: "Zásoby železa", youWillSee: "Pod 30 = vyčerpané zásoby. Únava i bez anémie." },
+          { name: "TSH + fT4", category: "thyroid", why: "Štítná žláza", youWillSee: "TSH nad 4 = pomalá štítná žláza = únava, přibírání. Pod 0,4 = rychlá." },
+          { name: "Albumin", category: "nutrition", why: "Výživa", youWillSee: "Pod 35 g/L = možná podvýživa. Důležité pro energii." },
+          { name: "Vitamin D", category: "vitamin", why: "Energie, nálada", youWillSee: "Pod 50 = nedostatek. Způsobuje únavu a špatnou náladu." }
+        ],
+        physicalMeasurementIds: ['bloodPressure'],
+        output: ['Energie report', 'Štítná žláza check', 'Trend + doporučení', 'Sync s Bistro']
+      },
+      krehkost: {
+        id: 'krehkost',
+        name: 'KŘEHKOST',
+        emoji: '👨‍👩‍👧',
+        tagline: 'Komplexní monitoring a prevence pádů',
+        basePrice: 1690,
+        color: '#EF4444',
+        concerns: ['Křehkost a pády', 'Výživa', 'Komplexní přehled'],
+        markers: [
+          // Základ
+          { name: "Krevní obraz", category: "blood", why: "Anémie, infekce", youWillSee: "Kompletní krevní obraz s diferenciálem." },
+          { name: "CRP", category: "inflammation", why: "Zánět", youWillSee: "Chronický zánět zhoršuje křehkost." },
+          { name: "Glukóza", category: "diabetes", why: "Cukrovka", youWillSee: "Diabetes zhoršuje hojení a sílu." },
+          { name: "Kreatinin + GFR", category: "kidney", why: "Ledviny", youWillSee: "Funkce ledvin - důležité pro léky." },
+          { name: "HbA1c", category: "diabetes", why: "Dlouhodobý cukr", youWillSee: "Průměr za 3 měsíce." },
+          // Energie
+          { name: "B12 + Folát", category: "vitamin", why: "Nervy, paměť", youWillSee: "Nedostatek = problémy s chůzí a pamětí." },
+          { name: "Ferritin", category: "blood", why: "Železo", youWillSee: "Zásoby železa." },
+          { name: "TSH + fT4", category: "thyroid", why: "Štítná žláza", youWillSee: "Ovlivňuje energii a metabolismus." },
+          // Výživa - hlavní focus
+          { name: "Albumin", category: "nutrition", why: "Stav výživy", youWillSee: "Klíčový marker podvýživy u seniorů. Pod 35 = riziko." },
+          { name: "Vitamin D", category: "vitamin", why: "Kosti, svaly", youWillSee: "Nedostatek = slabé kosti a svaly = pády." },
+          { name: "Minerály (Na, K, Ca, Mg)", category: "mineral", why: "Svaly, hydratace", youWillSee: "Nerovnováha = křeče, slabost, pády." },
+          // Orgány
+          { name: "ALT + AST", category: "liver", why: "Játra", youWillSee: "Funkce jater - důležité pro metabolismus léků." },
+          { name: "GGT + ALP + Bilirubin", category: "liver", why: "Játra komplet", youWillSee: "Kompletní jaterní panel." },
+          { name: "Moč chemicky", category: "kidney", why: "Ledviny, infekce", youWillSee: "Infekce močových cest jsou časté u seniorů." }
+        ],
+        physicalMeasurementIds: ['bloodPressure', 'gripStrength', 'inbody'],
+        output: ['Komplexní report', 'Křehkost skóre', '15min konzultace', 'Sdílení s lékařem']
+      }
+    };
+
+    // Frekvence s cenami
+    const frequencies = [
+      { id: '1x', label: '1× ročně', shortLabel: '1×', multiplier: 1, discount: 0, description: 'Roční check-up' },
+      { id: '2x', label: '2× ročně', shortLabel: '2×', multiplier: 2, discount: 0.1, description: 'Sledování trendu' },
+      { id: '4x', label: '4× ročně', shortLabel: '4×', multiplier: 4, discount: 0.2, description: 'Intenzivní monitoring' }
+    ];
+
+    // Výpočet ceny
+    const calculatePrice = (profile, frequency) => {
+      const base = profile.basePrice * frequency.multiplier;
+      return Math.round(base * (1 - frequency.discount));
+    };
+
+    // Mapování persona → profil
+    const personaToProfile = {
+      'young': 'kardio',
+      'senior': 'energie',
+      'family': 'krehkost',
+      'fragile': 'krehkost'
+    };
+
+    const personas = [
+      {
+        id: 'young',
+        emoji: '💪',
+        title: 'Je mi 50–65 let',
+        subtitle: 'Chci předejít infarktu a cukrovce',
+        description: 'Cítím se dobře, ale nechci dopadnout jako rodiče.',
+        concerns: ['Cukrovka v rodině', 'Cholesterol', 'Chci zůstat fit'],
+        profileId: 'kardio',
+        color: '#3B82F6'
+      },
+      {
+        id: 'senior',
+        emoji: '🏠',
+        title: 'Je mi 65–75 let',
+        subtitle: 'Chci mít energii a zůstat samostatný/á',
+        description: 'Občas jsem unavený/á. Chci vědět proč.',
+        concerns: ['Únava a energie', 'Krevní tlak', 'Paměť'],
+        profileId: 'energie',
+        color: '#10B981'
+      },
+      {
+        id: 'family',
+        emoji: '👨‍👩‍👧',
+        title: 'Starám se o rodiče',
+        subtitle: 'Chci pro ně klid a jistotu',
+        description: 'Bojím se, že něco přehlédnou. Chci komplexní přehled.',
+        concerns: ['Křehkost a pády', 'Výživa', 'Komplexní přehled'],
+        profileId: 'krehkost',
+        color: '#8B5CF6'
+      },
+      {
+        id: 'fragile',
+        emoji: '🏥',
+        title: 'Zdraví se zhoršuje',
+        subtitle: 'Po nemoci nebo hospitalizaci',
+        description: 'Potřebuji pravidelnou kontrolu a dohled.',
+        concerns: ['Rekonvalescence', 'Chronické nemoci', 'Prevence pádů'],
+        profileId: 'krehkost',
+        color: '#EF4444'
+      }
+    ];
+
+    // ============================================
+    // NAVIGATION
+    // ============================================
+
+    const App = () => {
+      const [view, setView] = useState('flow'); // home, mindmap, flow, analysis
+
+      return (
+        <ThemeProvider>
+          <AppContent view={view} setView={setView} />
+        </ThemeProvider>
+      );
+    };
+
+    const AppContent = ({ view, setView }) => {
+      const { isDark } = useTheme();
+
+      return (
+        <div className="min-h-screen grain-overlay" style={{ backgroundColor: 'var(--color-bg)' }}>
+          {/* Navigation */}
+          <nav className="sticky top-0 z-50 border-b" style={{
+            backgroundColor: 'var(--color-bg-sticky)',
+            backdropFilter: 'blur(12px)',
+            borderColor: 'var(--color-border)'
+          }}>
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <KomfiLogo className="h-5" style={{ color: 'var(--color-text-primary)' }} />
+                <span className="font-display text-xl" style={{ color: 'var(--color-terracotta)' }}>
+                  Vitalita
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                  {[
+                    { id: 'home', label: 'Přehled' },
+                    { id: 'flow', label: 'Objednat' },
+                    { id: 'mindmap', label: 'Struktura' },
+                    { id: 'analysis', label: 'Analýza' }
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => setView(item.id)}
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                      style={{
+                        backgroundColor: view === item.id ? 'var(--color-summary-bg)' : 'transparent',
+                        color: view === item.id ? 'var(--color-summary-text)' : 'var(--color-text-muted)'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <ThemeToggle />
+              </div>
+            </div>
+          </nav>
+
+          {/* Content */}
+          <main>
+            {view === 'home' && <HomeView onNavigate={setView} />}
+            {view === 'mindmap' && <MindmapView />}
+            {view === 'flow' && <FlowView />}
+            {view === 'analysis' && <AnalysisView />}
+          </main>
+        </div>
+      );
+    };
+
+    // ============================================
+    // HOME VIEW
+    // ============================================
+
+    const HomeView = ({ onNavigate }) => (
+      <div className="max-w-5xl mx-auto px-4 py-12 md:py-20">
+        <div className="text-center mb-16 animate-fade-in-up">
+          <KomfiLogo className="h-8 mx-auto mb-8" style={{ color: 'var(--color-text-primary)' }} />
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl mb-4" style={{ color: 'var(--color-text-primary)' }}>
+            Vitalita
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+            Dlouhodobé sledování zdraví z pohodlí domova.
+            <br />Pravidelná měření, sledování trendů, personalizované doporučení.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {[
+            {
+              id: 'flow',
+              icon: '🎯',
+              title: 'Objednat službu',
+              desc: 'Vyberte profil a objednejte si první měření'
+            },
+            {
+              id: 'mindmap',
+              icon: '🧠',
+              title: 'Struktura služby',
+              desc: 'Interaktivní mapa profilů a biomarkerů'
+            },
+            {
+              id: 'analysis',
+              icon: '📊',
+              title: 'Analýza',
+              desc: 'Rozbor balíčků, cen a doporučení'
+            }
+          ].map((item, index) => (
+            <button
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              className={`p-8 rounded-2xl text-left card-hover animate-fade-in-up stagger-${index + 1}`}
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                boxShadow: 'var(--shadow-card)'
+              }}
+            >
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4"
+                style={{ backgroundColor: 'var(--color-terracotta-bg)' }}
+              >
+                {item.icon}
+              </div>
+              <h3 className="font-display text-xl mb-2" style={{ color: 'var(--color-text-primary)' }}>{item.title}</h3>
+              <p style={{ color: 'var(--color-text-muted)' }}>{item.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in-up stagger-4">
+          {[
+            { label: 'Biomarkerů', value: '25+', icon: '🧪' },
+            { label: 'Profilů', value: '3', icon: '📦' },
+            { label: 'Person', value: '4', icon: '👥' },
+            { label: 'Frekvence', value: '1-4×/rok', icon: '📅' }
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="rounded-xl p-6 text-center"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              <div className="text-2xl mb-2">{stat.icon}</div>
+              <div className="font-display text-2xl mb-1" style={{ color: 'var(--color-terracotta)' }}>{stat.value}</div>
+              <div className="text-sm" style={{ color: 'var(--color-text-subtle)' }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    // ============================================
+    // MINDMAP VIEW
+    // ============================================
+
+    const MindmapView = () => {
+      const [expandedNodes, setExpandedNodes] = useState(['root', 'personas', 'concepts', 'packages']);
+
+      const toggleNode = (nodeId) => {
+        setExpandedNodes(prev =>
+          prev.includes(nodeId)
+            ? prev.filter(id => id !== nodeId)
+            : [...prev, nodeId]
+        );
+      };
+
+      const isExpanded = (nodeId) => expandedNodes.includes(nodeId);
+
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h2 className="text-3xl font-bold text-slate-800 mb-8 text-center">
+            🧠 VITALITA – Interaktivní Mindmap
+          </h2>
+
+          {/* Root Node */}
+          <div className="flex flex-col items-center">
+            <div className="bg-gradient-to-br from-emerald-500 to-blue-500 text-white px-8 py-6 rounded-2xl shadow-2xl text-center mb-8">
+              <div className="text-4xl mb-2">🩺</div>
+              <div className="text-2xl font-bold">VITALITA</div>
+              <div className="text-emerald-100">Dlouhodobé sledování zdraví</div>
+            </div>
+
+            {/* Main Branches */}
+            <div className="grid md:grid-cols-4 gap-6 w-full">
+
+              {/* Branch 1: Pro koho */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => toggleNode('personas')}
+                  className="w-full bg-blue-500 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-blue-600 transition-all flex items-center justify-between"
+                >
+                  <span>👥 Pro koho to je</span>
+                  <span>{isExpanded('personas') ? '−' : '+'}</span>
+                </button>
+
+                {isExpanded('personas') && (
+                  <div className="space-y-3 pl-4 border-l-4 border-blue-300">
+                    {personas.map(persona => (
+                      <div key={persona.id} className="bg-white rounded-xl p-4 shadow-md border-l-4" style={{borderLeftColor: persona.color}}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{persona.emoji}</span>
+                          <div>
+                            <div className="font-bold text-slate-800">{persona.title}</div>
+                            <div className="text-sm text-slate-500">{persona.subtitle}</div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {persona.concerns.map((c, i) => (
+                            <span key={i} className="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600">{c}</span>
+                          ))}
+                        </div>
+                        <div className="text-sm font-medium" style={{color: profiles[persona.profileId].color}}>
+                          → Profil: {profiles[persona.profileId].name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Branch 2: Zdravotní koncepty */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => toggleNode('concepts')}
+                  className="w-full bg-emerald-500 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-emerald-600 transition-all flex items-center justify-between"
+                >
+                  <span>🏥 Koncepty</span>
+                  <span>{isExpanded('concepts') ? '−' : '+'}</span>
+                </button>
+
+                {isExpanded('concepts') && (
+                  <div className="space-y-3 pl-4 border-l-4 border-emerald-300">
+                    {Object.entries(biomarkers).map(([key, concept]) => (
+                      <div key={key} className="bg-white rounded-xl p-4 shadow-md">
+                        <div className="font-bold text-slate-800 mb-1">{concept.name}</div>
+                        <div className="text-sm text-emerald-600 italic mb-2">"{concept.question}"</div>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {concept.focus.map((f, i) => (
+                            <span key={i} className="text-xs px-2 py-1 bg-emerald-100 rounded-full text-emerald-700">{f}</span>
+                          ))}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {concept.markers.length} markerů
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Branch 3: Profily */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => toggleNode('packages')}
+                  className="w-full bg-amber-500 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-amber-600 transition-all flex items-center justify-between"
+                >
+                  <span>📦 Profily</span>
+                  <span>{isExpanded('packages') ? '−' : '+'}</span>
+                </button>
+
+                {isExpanded('packages') && (
+                  <div className="space-y-3 pl-4 border-l-4 border-amber-300">
+                    {Object.values(profiles).map(profile => (
+                      <div key={profile.id} className="bg-white rounded-xl p-4 shadow-md border-l-4" style={{borderLeftColor: profile.color}}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">{profile.emoji}</span>
+                          <div className="font-bold text-slate-800">{profile.name}</div>
+                        </div>
+                        <div className="text-sm text-slate-600 mb-2">{profile.tagline}</div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-lg font-bold" style={{color: profile.color}}>od {profile.basePrice} Kč</span>
+                          <span className="text-xs text-slate-500">1-4× ročně</span>
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {profile.markers.length} markerů
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Branch 4: Trend & Frekvence */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => toggleNode('trend')}
+                  className="w-full bg-purple-500 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-purple-600 transition-all flex items-center justify-between"
+                >
+                  <span>📈 Trend</span>
+                  <span>{isExpanded('trend') ? '−' : '+'}</span>
+                </button>
+
+                {isExpanded('trend') && (
+                  <div className="space-y-3 pl-4 border-l-4 border-purple-300">
+                    <div className="bg-white rounded-xl p-4 shadow-md">
+                      <div className="font-bold text-slate-800 mb-2">Proč trend?</div>
+                      <ul className="text-sm text-slate-600 space-y-1">
+                        <li>• Jednorázový výsledek nestačí</li>
+                        <li>• Změna v čase je klíčová</li>
+                        <li>• Včasné zachycení zhoršení</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 shadow-md">
+                      <div className="font-bold text-slate-800 mb-2">Frekvence</div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-emerald-600">2× ročně</span>
+                          <span className="text-slate-500">Základní trend</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-amber-600">4× ročně</span>
+                          <span className="text-slate-500">Riziko/zhoršování</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-purple-100 rounded-xl p-4">
+                      <div className="font-bold text-purple-800 mb-1">Princip</div>
+                      <div className="text-sm text-purple-700">
+                        Ne víc věcí, ale <strong>stejné věci opakovaně</strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Markers Detail */}
+          <div className="mt-12">
+            <h3 className="text-2xl font-bold text-slate-800 mb-6 text-center">🧪 Detail biomarkerů</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {Object.entries(biomarkers).map(([key, concept]) => (
+                <div key={key} className="bg-white rounded-2xl p-6 shadow-lg">
+                  <h4 className="font-bold text-lg text-slate-800 mb-2">{concept.name}</h4>
+                  <p className="text-emerald-600 italic mb-4">"{concept.question}"</p>
+                  <div className="space-y-2">
+                    {concept.markers.map((marker, i) => (
+                      <div key={i} className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-lg">
+                        <span className="text-lg">
+                          {marker.category === 'blood' && '🩸'}
+                          {marker.category === 'inflammation' && '🔥'}
+                          {marker.category === 'nutrition' && '🥩'}
+                          {marker.category === 'diabetes' && '🍬'}
+                          {marker.category === 'kidney' && '💧'}
+                          {marker.category === 'vitamin' && '☀️'}
+                          {marker.category === 'lipid' && '❤️'}
+                          {marker.category === 'cardio' && '💓'}
+                          {marker.category === 'liver' && '🫀'}
+                          {marker.category === 'thyroid' && '🦋'}
+                          {marker.category === 'mineral' && '💎'}
+                          {marker.category === 'prostate' && '♂️'}
+                        </span>
+                        <div>
+                          <div className="font-medium text-slate-800">{marker.name}</div>
+                          <div className="text-xs text-slate-500">{marker.why}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ============================================
+    // HELPER: Emoji pro kategorii
+    // ============================================
+
+    const getCategoryEmoji = (category) => {
+      const emojis = {
+        blood: '🩸',
+        inflammation: '🔥',
+        nutrition: '🥩',
+        diabetes: '🍬',
+        kidney: '💧',
+        vitamin: '☀️',
+        lipid: '❤️',
+        cardio: '💓',
+        liver: '🫀',
+        thyroid: '🦋',
+        mineral: '💎',
+        prostate: '♂️'
+      };
+      return emojis[category] || '🧪';
+    };
+
+    // ============================================
+    // KOMPONENTA: MarkerCard (NOVÝ DESIGN - label nahoře, marker dole)
+    // ============================================
+
+    const MarkerCard = ({ marker, packageColor }) => {
+      return (
+        <div
+          className="p-4 rounded-xl"
+          style={{
+            backgroundColor: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border)'
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-1">{getCategoryEmoji(marker.category)}</span>
+            <div className="flex-1 min-w-0">
+              {/* Hlavní label nahoře - větší */}
+              <div className="font-medium text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>{marker.why}</div>
+              {/* Technický název dole - menší, šedý */}
+              <div className="text-xs mb-2" style={{ color: 'var(--color-text-subtle)' }}>{marker.name}</div>
+              {/* Vysvětlení */}
+              {marker.youWillSee && (
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>{marker.youWillSee}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ============================================
+    // KOMPONENTA: PhysicalMeasurementCard (NOVÝ DESIGN - vždy rozbaleno)
+    // ============================================
+
+    const PhysicalMeasurementCard = ({ measurement, packageColor }) => {
+      return (
+        <div
+          className="p-4 rounded-xl"
+          style={{
+            backgroundColor: 'var(--color-bg-tag)',
+            border: '1px solid var(--color-border)'
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-1">{measurement.emoji}</span>
+            <div className="flex-1 min-w-0">
+              {/* Hlavní label nahoře - větší */}
+              <div className="font-medium text-base mb-1" style={{ color: 'var(--color-text-primary)' }}>{measurement.why}</div>
+              {/* Technický název dole - menší, šedý */}
+              <div className="text-xs mb-2" style={{ color: 'var(--color-text-subtle)' }}>{measurement.name}</div>
+              {/* Vysvětlení */}
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>{measurement.youWillSee}</p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ============================================
+    // FLOW VIEW (Zákaznický prototyp) - NOVÁ VERZE S PROFILY
+    // ============================================
+
+    const FlowView = () => {
+      const [step, setStep] = useState(0); // 0 = pro koho, 1 = persona, 2 = profil, 3 = souhrn
+      const [forWhom, setForWhom] = useState(null); // 'self' nebo 'parents'
+      const [selectedPersona, setSelectedPersona] = useState(null);
+      const [selectedProfile, setSelectedProfile] = useState(null);
+      const [selectedFrequency, setSelectedFrequency] = useState(frequencies[1]); // default 2× ročně
+      const [selectedAddons, setSelectedAddons] = useState([]); // add-ony navíc
+
+      const handleForWhomSelect = (whom) => {
+        setForWhom(whom);
+        setStep(1);
+      };
+
+      const handlePersonaSelect = (persona) => {
+        setSelectedPersona(persona);
+        const profile = profiles[persona.profileId];
+        setSelectedProfile(profile);
+        // Nastav defaultní add-ony podle profilu
+        const defaultAddons = [];
+        if (profile.physicalMeasurementIds.includes('bloodPressure') || profile.physicalMeasurementIds.includes('inbody')) {
+          defaultAddons.push('telMereni');
+        }
+        if (profile.physicalMeasurementIds.includes('gripStrength')) {
+          defaultAddons.push('grip');
+        }
+        setSelectedAddons(defaultAddons);
+        setStep(2);
+      };
+
+      const toggleAddon = (addonId) => {
+        setSelectedAddons(prev =>
+          prev.includes(addonId)
+            ? prev.filter(id => id !== addonId)
+            : [...prev, addonId]
+        );
+      };
+
+      const calculateTotalPrice = (profile, frequency, addons) => {
+        const basePrice = calculatePrice(profile, frequency);
+        const addonsPrice = addons.reduce((sum, addonId) => {
+          return sum + (measurementCategories[addonId]?.addonPrice || 0) * frequency.multiplier;
+        }, 0);
+        return basePrice + Math.round(addonsPrice * (1 - frequency.discount));
+      };
+
+      const resetFlow = () => {
+        setStep(0);
+        setForWhom(null);
+        setSelectedPersona(null);
+        setSelectedProfile(null);
+        setSelectedFrequency(frequencies[1]);
+        setSelectedAddons([]);
+      };
+
+      // Step 0: Pro koho je to?
+      if (step === 0) {
+        return (
+          <div className="max-w-3xl mx-auto px-4 py-16 animate-fade-in-up">
+            <div className="text-center mb-12">
+              <KomfiLogo className="h-8 mx-auto mb-6" style={{ color: 'var(--color-text-primary)' }} />
+              <h2 className="font-display text-4xl md:text-5xl mb-4" style={{ color: 'var(--color-text-primary)' }}>Vitalita</h2>
+              <p className="text-lg" style={{ color: 'var(--color-text-muted)' }}>Zdravotní screening z pohodlí domova</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <button
+                onClick={() => handleForWhomSelect('self')}
+                className="p-10 rounded-2xl text-left transition-all hover:scale-[1.02] card-hover"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-card)'
+                }}
+              >
+                <div className="text-5xl mb-4">🙋</div>
+                <div className="font-display text-2xl mb-2" style={{ color: 'var(--color-text-primary)' }}>Chci to pro sebe</div>
+                <div style={{ color: 'var(--color-text-muted)' }}>
+                  Chci mít přehled o svém zdraví a předejít problémům.
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleForWhomSelect('parents')}
+                className="p-10 rounded-2xl text-left transition-all hover:scale-[1.02] card-hover"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-card)'
+                }}
+              >
+                <div className="text-5xl mb-4">👨‍👩‍👧</div>
+                <div className="font-display text-2xl mb-2" style={{ color: 'var(--color-text-primary)' }}>Starám se o rodiče</div>
+                <div style={{ color: 'var(--color-text-muted)' }}>
+                  Chci mít přehled o zdraví svých blízkých a pomoct jim.
+                </div>
+              </button>
+            </div>
+
+            <div className="flex justify-center gap-8 mt-12 text-sm" style={{ color: 'var(--color-text-subtle)' }}>
+              <span>🏠 Domácí odběry</span>
+              <span>📈 Trend v čase</span>
+              <span>🤖 AI interpretace</span>
+            </div>
+          </div>
+        );
+      }
+
+      // Step 1: Persona Selection (stejné volby pro obě větve)
+      if (step === 1) {
+        // Obě větve mají stejné 3 persony: 💪 50-65, 🏠 65-75, 🏥 Zhoršení
+        const filteredPersonas = personas.filter(p => p.id !== 'family');
+
+        const headerText = forWhom === 'self'
+          ? { title: 'Jaká je vaše situace?', subtitle: 'Vyberte možnost, která vám je nejbližší' }
+          : { title: 'Jaká je situace vašich blízkých?', subtitle: 'Vyberte možnost, která jim je nejbližší' };
+
+        return (
+          <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+            <button
+              onClick={() => setStep(0)}
+              className="mb-6 px-4 py-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                color: 'var(--color-text-muted)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              ← Zpět
+            </button>
+
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl mb-4" style={{ color: 'var(--color-text-primary)' }}>{headerText.title}</h2>
+              <p style={{ color: 'var(--color-text-muted)' }}>{headerText.subtitle}</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {filteredPersonas.map((persona, index) => (
+                <button
+                  key={persona.id}
+                  onClick={() => handlePersonaSelect(persona)}
+                  className={`p-6 rounded-2xl text-left transition-all hover:scale-[1.02] card-hover animate-fade-in-up stagger-${index + 1}`}
+                  style={{
+                    backgroundColor: 'var(--color-bg-card)',
+                    border: '1px solid var(--color-border)',
+                    boxShadow: 'var(--shadow-card)'
+                  }}
+                >
+                  <div className="text-4xl mb-3">{persona.emoji}</div>
+                  <div className="font-display text-xl mb-2" style={{ color: 'var(--color-text-primary)' }}>{persona.title}</div>
+                  <div className="text-sm mb-4" style={{ color: 'var(--color-text-muted)' }}>{persona.subtitle}</div>
+                  <div className="flex flex-wrap gap-1">
+                    {persona.concerns.map((c, i) => (
+                      <span
+                        key={i}
+                        className="text-xs px-2 py-1 rounded-full"
+                        style={{ backgroundColor: 'var(--color-terracotta-bg)', color: 'var(--color-terracotta)' }}
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // Step 2: Profile Detail + Frequency Selection
+      if (step === 2 && selectedPersona && selectedProfile) {
+        const totalPrice = calculateTotalPrice(selectedProfile, selectedFrequency, selectedAddons);
+        const basePrice = calculatePrice(selectedProfile, selectedFrequency);
+        const addonsTotal = totalPrice - basePrice;
+
+        return (
+          <div className="max-w-5xl mx-auto px-4 py-8 animate-fade-in-up">
+            <button
+              onClick={() => setStep(1)}
+              className="mb-6 px-4 py-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                color: 'var(--color-text-muted)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              ← Zpět na výběr
+            </button>
+
+            {/* Persona Header */}
+            <div
+              className="rounded-2xl p-8 mb-6"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                boxShadow: 'var(--shadow-card)'
+              }}
+            >
+              <div className="flex items-start gap-6">
+                <div
+                  className="text-5xl w-20 h-20 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--color-terracotta-bg)' }}
+                >
+                  {selectedPersona.emoji}
+                </div>
+                <div>
+                  <h2 className="font-display text-2xl md:text-3xl mb-2" style={{ color: 'var(--color-text-primary)' }}>{selectedPersona.title}</h2>
+                  <p className="mb-4" style={{ color: 'var(--color-text-muted)' }}>{selectedPersona.description}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{selectedProfile.emoji}</span>
+                    <span className="font-display text-xl" style={{ color: 'var(--color-terracotta)' }}>
+                      Profil {selectedProfile.name}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vaše obavy → Co měříme */}
+            <div
+              className="rounded-2xl p-6 mb-6"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                boxShadow: 'var(--shadow-card)'
+              }}
+            >
+              <h3 className="font-display text-lg mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                Na základě vašich obav měříme:
+              </h3>
+              <div className="space-y-3">
+                {selectedPersona.concerns.map((concern, i) => (
+                  <div key={i} className="flex items-center gap-4 p-3 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tag)' }}>
+                    <span
+                      className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap"
+                      style={{ backgroundColor: 'var(--color-terracotta-bg)', color: 'var(--color-terracotta)' }}
+                    >
+                      {concern}
+                    </span>
+                    <span style={{ color: 'var(--color-text-subtle)' }}>→</span>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProfile.markers
+                        .filter(m => {
+                          const concernMap = {
+                            'Cukrovka v rodině': ['Glukóza', 'HbA1c'],
+                            'Cholesterol': ['Cholesterol', 'LDL', 'HDL', 'Triglyceridy'],
+                            'Chci zůstat fit': ['Krevní obraz', 'Vitamin D'],
+                            'Únava a energie': ['Krevní obraz', 'B12', 'Ferritin', 'TSH'],
+                            'Krevní tlak': ['tlak'],
+                            'Paměť': ['B12', 'TSH'],
+                            'Křehkost a pády': ['Grip', 'InBody', 'Vitamin D', 'Albumin'],
+                            'Výživa': ['Albumin', 'Minerály', 'B12'],
+                            'Komplexní přehled': ['Játra', 'Moč', 'Štítná'],
+                            'Rekonvalescence': ['CRP', 'Albumin', 'Krevní obraz'],
+                            'Chronické nemoci': ['GFR', 'HbA1c', 'Játra'],
+                            'Prevence pádů': ['Grip', 'InBody', 'Vitamin D']
+                          };
+                          const keywords = concernMap[concern] || [];
+                          return keywords.some(kw => m.name.toLowerCase().includes(kw.toLowerCase()));
+                        })
+                        .slice(0, 3)
+                        .map((marker, j) => (
+                          <span
+                            key={j}
+                            className="px-2 py-1 rounded-lg text-sm"
+                            style={{
+                              backgroundColor: 'var(--color-bg-card)',
+                              color: 'var(--color-text-secondary)',
+                              border: '1px solid var(--color-border)'
+                            }}
+                          >
+                            {getCategoryEmoji(marker.category)} {marker.name}
+                          </span>
+                        ))
+                      }
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Profile Detail */}
+            <div
+              className="rounded-2xl p-8"
+              style={{
+                backgroundColor: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                boxShadow: 'var(--shadow-card)'
+              }}
+            >
+              <div
+                className="rounded-2xl p-6 md:p-8"
+                style={{
+                  backgroundColor: 'var(--color-bg-tag)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-3xl">{selectedProfile.emoji}</span>
+                      <span className="font-display text-2xl md:text-3xl" style={{ color: 'var(--color-text-primary)' }}>{selectedProfile.name}</span>
+                    </div>
+                    <p style={{ color: 'var(--color-text-muted)' }}>{selectedProfile.tagline}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-display text-3xl md:text-4xl" style={{ color: 'var(--color-terracotta)' }}>
+                      {totalPrice} Kč
+                    </div>
+                    <div style={{ color: 'var(--color-text-subtle)' }}>za {selectedFrequency.label}</div>
+                  </div>
+                </div>
+
+                {/* Frequency Selection */}
+                <div className="mb-6">
+                  <div className="font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Jak často chcete měření?</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {frequencies.map(freq => {
+                      const isSelected = selectedFrequency.id === freq.id;
+                      const price = calculateTotalPrice(selectedProfile, freq, selectedAddons);
+
+                      return (
+                        <button
+                          key={freq.id}
+                          onClick={() => setSelectedFrequency(freq)}
+                          className={`p-4 rounded-xl text-center transition-all ${
+                            isSelected ? 'scale-[1.02]' : ''
+                          }`}
+                          style={{
+                            border: isSelected ? '2px solid var(--color-terracotta)' : '1px solid var(--color-border)',
+                            backgroundColor: isSelected ? 'var(--color-terracotta-bg)' : 'var(--color-bg-card)',
+                            boxShadow: isSelected ? 'var(--shadow-hover)' : 'none'
+                          }}
+                        >
+                          <div className="font-display text-2xl mb-1" style={{ color: 'var(--color-text-primary)' }}>{freq.shortLabel}</div>
+                          <div className="text-sm mb-2" style={{ color: 'var(--color-text-subtle)' }}>{freq.description}</div>
+                          <div className="text-lg font-semibold" style={{ color: 'var(--color-terracotta)' }}>
+                            {price} Kč
+                          </div>
+                          {freq.discount > 0 && (
+                            <div className="text-xs font-medium" style={{ color: 'var(--color-sage)' }}>
+                              -{Math.round(freq.discount * 100)}% sleva
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Category Blocks - Add-ons */}
+                <div className="mb-6">
+                  <div className="font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Vyberte typy měření:</div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {Object.values(measurementCategories).map(cat => {
+                      const isIncluded = cat.baseIncluded || selectedAddons.includes(cat.id);
+                      const isBase = cat.baseIncluded;
+
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => !isBase && toggleAddon(cat.id)}
+                          disabled={isBase}
+                          className={`p-4 rounded-xl text-center transition-all ${
+                            isIncluded ? '' : 'opacity-60 hover:opacity-80'
+                          } ${isBase ? 'cursor-default' : 'cursor-pointer'}`}
+                          style={{
+                            border: isIncluded ? '2px solid var(--color-terracotta)' : '1px solid var(--color-border)',
+                            backgroundColor: isIncluded ? 'var(--color-terracotta-bg)' : 'var(--color-bg-card)',
+                            boxShadow: isIncluded ? 'var(--shadow-card)' : 'none'
+                          }}
+                        >
+                          <div className="text-3xl mb-2">{cat.emoji}</div>
+                          <div className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>{cat.name}</div>
+                          <div className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>{cat.description}</div>
+                          {isBase ? (
+                            <div className="text-xs font-medium mt-2" style={{ color: 'var(--color-terracotta)' }}>
+                              ✓ Zahrnuto
+                            </div>
+                          ) : (
+                            <div className="text-xs font-medium mt-2" style={{ color: isIncluded ? 'var(--color-terracotta)' : 'var(--color-text-subtle)' }}>
+                              {isIncluded ? '✓ Přidáno' : `+${cat.addonPrice} Kč`}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {addonsTotal > 0 && (
+                    <div className="mt-3 text-sm text-right" style={{ color: 'var(--color-text-subtle)' }}>
+                      Add-ony celkem: <span className="font-medium">+{addonsTotal} Kč</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Co měříme - VŽDY ROZBALENO */}
+                <div
+                  className="rounded-xl p-4 mb-6"
+                  style={{ backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+                >
+                  <div className="font-display text-lg mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                    🧪 Co měříme
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Krevní testy */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">🩸</span>
+                        <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Krevní testy</span>
+                        <span className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>({selectedProfile.markers.length})</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {selectedProfile.markers.map((marker, i) => (
+                          <MarkerCard key={i} marker={marker} packageColor={selectedProfile.color} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tělesná měření - pokud je addon vybrán */}
+                    {selectedAddons.includes('telMereni') && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">📏</span>
+                          <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Tělesná měření</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <PhysicalMeasurementCard measurement={physicalMeasurements.bloodPressure} packageColor={selectedProfile.color} />
+                          <PhysicalMeasurementCard measurement={physicalMeasurements.inbody} packageColor={selectedProfile.color} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Grip strength - pokud je addon vybrán */}
+                    {selectedAddons.includes('grip') && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">✊</span>
+                          <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Síla stisku</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <PhysicalMeasurementCard measurement={physicalMeasurements.gripStrength} packageColor={selectedProfile.color} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Kognitivní testy - pokud je addon vybrán */}
+                    {selectedAddons.includes('kognitivni') && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">🧠</span>
+                          <span className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Kognitivní testy</span>
+                        </div>
+                        <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-tag)', border: '1px solid var(--color-border)' }}>
+                          <div className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>Paměť a koncentrace</div>
+                          <div className="text-xs mb-2" style={{ color: 'var(--color-text-subtle)' }}>Kognitivní screening</div>
+                          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                            Krátký test paměti a pozornosti. Uvidíte skóre a srovnání s věkovou skupinou. Pomáhá odhalit rané známky kognitivního poklesu.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Output */}
+                <div className="rounded-xl p-6 mb-6" style={{ backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                  <div className="font-medium mb-3" style={{ color: 'var(--color-text-primary)' }}>📋 Co dostanete:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProfile.output.map((item, i) => (
+                      <span key={i} className="px-4 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--color-bg-tag)', color: 'var(--color-text-secondary)' }}>
+                        ✓ {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={() => setStep(3)}
+                  className="w-full py-5 rounded-xl text-white text-lg font-semibold transition-all btn-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-terracotta-dark) 100%)',
+                    boxShadow: '0 12px 40px rgba(198, 124, 78, 0.3)'
+                  }}
+                >
+                  <span>Pokračovat k objednávce →</span>
+                </button>
+              </div>
+
+              {/* Bistro Upsell */}
+              <div
+                className="mt-6 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6"
+                style={{
+                  backgroundColor: 'var(--color-terracotta-bg)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <div className="text-4xl">🍽️</div>
+                <div className="flex-1 text-center md:text-left">
+                  <div className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Máte Komfi Bistro?</div>
+                  <div style={{ color: 'var(--color-text-muted)' }}>
+                    Propojte Vitalitu s jídelníčkem. Dostanete personalizovaná výživová doporučení.
+                  </div>
+                </div>
+                <div className="px-6 py-3 rounded-xl text-white font-semibold whitespace-nowrap" style={{ backgroundColor: 'var(--color-terracotta)' }}>
+                  Bundle: -20%
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Step 3: Summary
+      if (step === 3 && selectedProfile) {
+        const totalPrice = calculateTotalPrice(selectedProfile, selectedFrequency, selectedAddons);
+        const addonsCount = selectedAddons.length;
+
+        return (
+          <div className="min-h-screen flex items-center justify-center p-8 animate-scale-in">
+            <div className="max-w-lg rounded-3xl p-8 md:p-12 text-center" style={{ backgroundColor: 'var(--color-bg-card)', boxShadow: 'var(--shadow-hover)' }}>
+              <div
+                className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center text-4xl text-white"
+                style={{ background: 'linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-terracotta-dark) 100%)' }}
+              >
+                ✓
+              </div>
+              <h2 className="font-display text-3xl mb-4" style={{ color: 'var(--color-text-primary)' }}>Skvělá volba!</h2>
+              <p className="mb-8" style={{ color: 'var(--color-text-muted)' }}>
+                Profil <strong style={{ color: 'var(--color-terracotta)' }}>{selectedProfile.name}</strong> s frekvencí <strong>{selectedFrequency.label}</strong> je ideální pro vaši situaci.
+              </p>
+
+              <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: 'var(--color-bg-tag)' }}>
+                <div className="mb-2" style={{ color: 'var(--color-text-subtle)' }}>{selectedFrequency.label}</div>
+                <div className="font-display text-4xl md:text-5xl mb-1" style={{ color: 'var(--color-terracotta)' }}>{totalPrice} Kč</div>
+                <div style={{ color: 'var(--color-text-muted)' }}>
+                  = {selectedProfile.markers.length} krevních testů{addonsCount > 0 ? ` + ${addonsCount} doplňková měření` : ''}
+                </div>
+                {selectedAddons.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 mt-3">
+                    {selectedAddons.map(addonId => (
+                      <span key={addonId} className="px-2 py-1 rounded-lg text-xs" style={{ backgroundColor: 'var(--color-bg-card)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                        {measurementCategories[addonId].emoji} {measurementCategories[addonId].name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setStep(2)}
+                  className="flex-1 py-4 rounded-xl font-medium transition-colors"
+                  style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', backgroundColor: 'var(--color-bg-card)' }}
+                >
+                  ← Zpět
+                </button>
+                <button
+                  className="flex-[2] py-4 rounded-xl text-white font-semibold transition-all btn-primary"
+                  style={{ background: 'linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-terracotta-dark) 100%)' }}
+                >
+                  <span>Objednat 🏠</span>
+                </button>
+              </div>
+
+              <p className="text-sm mt-6" style={{ color: 'var(--color-text-subtle)' }}>
+                Kit doručíme do 3 dnů. Výsledky do 5 dnů od odběru.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    };
+
+    // ============================================
+    // ANALYSIS VIEW
+    // ============================================
+
+    const AnalysisView = () => (
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        <h2 className="text-3xl font-bold text-slate-800 mb-8 text-center">📊 Kritická analýza a doporučení</h2>
+
+        {/* Overview */}
+        <div className="bg-white rounded-2xl p-8 shadow-lg mb-8">
+          <h3 className="text-2xl font-bold text-slate-800 mb-4">🎯 Klíčové otázky</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-bold text-emerald-600 mb-2">Co dává smysl?</h4>
+              <ul className="space-y-2 text-slate-600">
+                <li>✅ <strong>Trend > jednotlivá měření</strong> - hlavní diferenciátor</li>
+                <li>✅ <strong>Propojení s Bistro</strong> - unikátní hodnota</li>
+                <li>✅ <strong>Domácí odběry</strong> - pohodlí pro seniory</li>
+                <li>✅ <strong>Jasná interpretace</strong> - ne jen čísla</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-red-500 mb-2">Rizika / Otázky</h4>
+              <ul className="space-y-2 text-slate-600">
+                <li>⚠️ <strong>Komplexita balíčků</strong> - příliš mnoho markerů v Dohledu?</li>
+                <li>⚠️ <strong>Cenová citlivost</strong> - 50+ jsou cenově citliví</li>
+                <li>⚠️ <strong>Konkurence</strong> - EUC, Synlab mají podobné služby</li>
+                <li>⚠️ <strong>Regulace</strong> - domácí odběry mají limity</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Package Analysis */}
+        <div className="bg-white rounded-2xl p-8 shadow-lg mb-8">
+          <h3 className="text-2xl font-bold text-slate-800 mb-6">📦 Analýza balíčků</h3>
+
+          <div className="space-y-6">
+            {/* Přehled */}
+            <div className="border-l-4 border-emerald-500 pl-6">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl">🟢</span>
+                <span className="text-xl font-bold text-slate-800">PŘEHLED (890 Kč)</span>
+                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm">👍 Doporučeno</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong className="text-emerald-600">Pro:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• Nízká cena = nízká bariéra vstupu</li>
+                    <li>• 6 klíčových markerů pokrývá hlavní rizika</li>
+                    <li>• Ideální pro "mladší" 50-65</li>
+                    <li>• Skvělý wedge produkt</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong className="text-red-500">Proti:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• Možná příliš jednoduchý pro 65+</li>
+                    <li>• Chybí lipidový panel (jen celkový cholesterol)</li>
+                  </ul>
+                  <strong className="text-blue-600 mt-3 block">Doporučení:</strong>
+                  <p className="text-slate-600">Přidat LDL/HDL, ztratíte diferenciaci Kontroly</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Kontrola */}
+            <div className="border-l-4 border-amber-500 pl-6">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl">🟡</span>
+                <span className="text-xl font-bold text-slate-800">KONTROLA (1490 Kč)</span>
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm">⚡ Sweet spot</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong className="text-emerald-600">Pro:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• Kompletní kardio + diabetes profil</li>
+                    <li>• HbA1c je killer feature (3-měsíční průměr)</li>
+                    <li>• Propojení s Bistro dává smysl</li>
+                    <li>• Dobrý poměr cena/hodnota</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong className="text-red-500">Proti:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• 14 markerů může být overwhelming</li>
+                    <li>• Moč chemicky - potřebujete to opravdu?</li>
+                  </ul>
+                  <strong className="text-blue-600 mt-3 block">Doporučení:</strong>
+                  <p className="text-slate-600">Toto by měl být váš hlavní produkt. Možná přejmenovat na "STANDARD"?</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dohled */}
+            <div className="border-l-4 border-red-500 pl-6">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl">🔴</span>
+                <span className="text-xl font-bold text-slate-800">DOHLED (2490 Kč)</span>
+                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">🤔 Ke zvážení</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong className="text-emerald-600">Pro:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• Komplexní pro vážné případy</li>
+                    <li>• 15min konzultace je silná hodnota</li>
+                    <li>• Sdílení s lékařem - diferenciátor</li>
+                    <li>• 4× ročně = skutečný monitoring</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong className="text-red-500">Proti:</strong>
+                  <ul className="text-slate-600 mt-1 space-y-1">
+                    <li>• 20+ markerů je hodně na interpretaci</li>
+                    <li>• Roční cena 8960 Kč je vysoká</li>
+                    <li>• PSA kontroverzní (falešná pozitiva)</li>
+                    <li>• Minerály selektivně - které?</li>
+                  </ul>
+                  <strong className="text-blue-600 mt-3 block">Doporučení:</strong>
+                  <p className="text-slate-600">Zvážit split: DOHLED (bez PSA) + DOHLED MUŽI (s PSA)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Analysis */}
+        <div className="bg-white rounded-2xl p-8 shadow-lg mb-8">
+          <h3 className="text-2xl font-bold text-slate-800 mb-6">💰 Cenová analýza</h3>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2">
+                  <th className="text-left py-3">Balíček</th>
+                  <th className="text-right py-3">Jednorázově</th>
+                  <th className="text-right py-3">Ročně</th>
+                  <th className="text-right py-3">Měsíčně</th>
+                  <th className="text-right py-3">Per marker</th>
+                  <th className="text-center py-3">Hodnocení</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-3 font-medium">🟢 PŘEHLED</td>
+                  <td className="text-right">890 Kč</td>
+                  <td className="text-right">1580 Kč</td>
+                  <td className="text-right text-emerald-600 font-bold">132 Kč</td>
+                  <td className="text-right">148 Kč</td>
+                  <td className="text-center">✅ OK</td>
+                </tr>
+                <tr className="border-b bg-amber-50">
+                  <td className="py-3 font-medium">🟡 KONTROLA</td>
+                  <td className="text-right">1490 Kč</td>
+                  <td className="text-right">2680 Kč</td>
+                  <td className="text-right text-amber-600 font-bold">223 Kč</td>
+                  <td className="text-right">107 Kč</td>
+                  <td className="text-center">⭐ Best value</td>
+                </tr>
+                <tr>
+                  <td className="py-3 font-medium">🔴 DOHLED</td>
+                  <td className="text-right">2490 Kč</td>
+                  <td className="text-right">8960 Kč</td>
+                  <td className="text-right text-red-600 font-bold">747 Kč</td>
+                  <td className="text-right">124 Kč</td>
+                  <td className="text-center">⚠️ Premium</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+            <strong className="text-blue-800">💡 Insight:</strong>
+            <p className="text-blue-700 mt-1">
+              KONTROLA má nejlepší hodnotu per marker (107 Kč). Ale DOHLED měsíčně (747 Kč)
+              může být moc na důchodce. Zvážit nižší frekvenci nebo nižší cenu.
+            </p>
+          </div>
+        </div>
+
+        {/* Recommendations */}
+        <div className="bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl p-8 text-white">
+          <h3 className="text-2xl font-bold mb-6">🚀 Doporučení pro Komfi Vitalita</h3>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <h4 className="font-bold text-lg mb-3">1. Zjednodušit komunikaci</h4>
+              <ul className="space-y-2 text-emerald-100">
+                <li>• "Drží tělo?" → "Jak jsem na tom?"</li>
+                <li>• Méně technických termínů</li>
+                <li>• Semafor report jako hlavní výstup</li>
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <h4 className="font-bold text-lg mb-3">2. Posílit diferenciaci</h4>
+              <ul className="space-y-2 text-emerald-100">
+                <li>• TREND je killer feature - zdůraznit</li>
+                <li>• Propojení Bistro → Vitalita → Živiny</li>
+                <li>• "Vaše data, váš plán"</li>
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <h4 className="font-bold text-lg mb-3">3. Cenová strategie</h4>
+              <ul className="space-y-2 text-emerald-100">
+                <li>• Entry: 599 Kč (3 markery) - získat data</li>
+                <li>• Standard: 1290 Kč (KONTROLA)</li>
+                <li>• Premium: 1990 Kč (DOHLED 2× ročně)</li>
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <h4 className="font-bold text-lg mb-3">4. Go-to-market</h4>
+              <ul className="space-y-2 text-emerald-100">
+                <li>• Začít s Bistro klienty (warm leads)</li>
+                <li>• Bundle Bistro + Vitalita (-20%)</li>
+                <li>• Obce jako B2B kanál</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    // ============================================
+    // RENDER
+    // ============================================
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
