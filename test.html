@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <h1>Test 1: Základní HTML</h1>
+  <p>Pokud vidíš tento text, HTML funguje.</p>
+
+  <div id="react-test"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const App = () => {
+      return (
+        <div style={{padding: '20px', background: '#10B981', color: 'white', borderRadius: '10px', marginTop: '20px'}}>
+          <h2>Test 2: React funguje! ✅</h2>
+          <p>Pokud vidíš tento zelený box, React + Babel fungují správně.</p>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('react-test')).render(<App />);
+  </script>
+</body>
+</html>

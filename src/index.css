@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* ===== LIGHT MODE (Default) ===== */
+  :root {
+    /* Surface Colors */
+    --surface: #FFF8F5;
+    --surface-dim: #E6D7D2;
+    --surface-bright: #FFF8F5;
+    --surface-container-lowest: #FFFFFF;
+    --surface-container-low: #FFF1EB;
+    --surface-container: #FCEAE3;
+    --surface-container-high: #F6E4DD;
+    --surface-container-highest: #F0DED7;
+    --on-surface: #231915;
+    --on-surface-variant: #52443D;
+    --outline: #85736B;
+    --outline-variant: #D7C2B9;
+
+    /* Legacy CSS vars for components using them */
+    --color-text-primary: #231915;
+    --color-text-secondary: #52443D;
+    --color-text-muted: #85736B;
+    --color-bg-card: #FFFFFF;
+    --color-bg-tag: #F6E4DD;
+    --color-border: #D7C2B9;
+    --color-border-light: #E6D7D2;
+
+    /* Motion */
+    --motion-duration-short: 200ms;
+    --motion-duration-medium: 400ms;
+    --motion-duration-long: 600ms;
+    --motion-easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+  }
+
+  /* ===== DARK MODE ===== */
+  .dark {
+    /* Surface Colors */
+    --surface: #1A1110;
+    --surface-dim: #1A1110;
+    --surface-bright: #423735;
+    --surface-container-lowest: #100C0B;
+    --surface-container-low: #231917;
+    --surface-container: #27201E;
+    --surface-container-high: #322A28;
+    --surface-container-highest: #3D3432;
+    --on-surface: #F0DED7;
+    --on-surface-variant: #D7C2B9;
+    --outline: #9F8D85;
+    --outline-variant: #52443D;
+
+    /* Legacy CSS vars for components using them */
+    --color-text-primary: #F0DED7;
+    --color-text-secondary: #D7C2B9;
+    --color-text-muted: #9F8D85;
+    --color-bg-card: #27201E;
+    --color-bg-tag: #322A28;
+    --color-border: #52443D;
+    --color-border-light: #3D3432;
+  }
+
+  body {
+    @apply font-sans bg-surface text-surface-on antialiased selection:bg-primary-container selection:text-primary-on-container;
+  }
+
+  /* Expressive Typography Scale */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-normal;
+  }
+
+  h1 {
+    @apply text-[57px] leading-[64px] tracking-tight;
+  }
+
+  h2 {
+    @apply text-[45px] leading-[52px];
+  }
+
+  h3 {
+    @apply text-[32px] leading-[40px];
+  }
+
+  button {
+    @apply font-medium tracking-wide active:scale-95 transition-transform;
+  }
+}
+
+@layer components {
+
+  /* MD3 Cards */
+  .card-filled {
+    @apply bg-surface-container-highest text-surface-on rounded-xl border-none shadow-none transition-all duration-300 hover:shadow-elevation-1;
+  }
+
+  .card-elevated {
+    @apply bg-surface-container-low text-surface-on rounded-xl shadow-elevation-1 hover:shadow-elevation-2 transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .card-outlined {
+    @apply bg-surface text-surface-on rounded-xl border border-surface-outline-variant hover:bg-surface-container-low transition-colors;
+  }
+
+  /* Glass Panel Utility */
+  .glass-panel {
+    @apply bg-surface-container/60 backdrop-blur-md border border-surface-outline-variant/20 shadow-elevation-1;
+  }
+
+  /* MD3 Buttons */
+  .btn-primary {
+    @apply bg-primary text-primary-on h-10 px-6 rounded-pill hover:bg-opacity-90 active:bg-opacity-100 shadow-elevation-1 hover:shadow-elevation-2 flex items-center justify-center gap-2 transition-all hover:scale-105;
+  }
+
+  .btn-tonal {
+    @apply bg-secondary-container text-secondary-on-container h-10 px-6 rounded-pill hover:bg-opacity-80 flex items-center justify-center gap-2 transition-all hover:scale-105;
+  }
+
+  .btn-text {
+    @apply text-primary font-bold h-10 px-4 rounded-pill hover:bg-primary-container/10 flex items-center justify-center gap-2 transition-all hover:tracking-wider;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Custom Fonts Import */
+@font-face {
+  font-family: 'Gambarino';
+  src: url('/fonts/Gambarino_Complete/Fonts/WEB/fonts/Gambarino-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi_Complete/Fonts/WEB/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-display: swap;
+}

@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Komfi Vitalita – Prototyp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FBF9F6',
+            sand: '#F5F1EB',
+            warmgray: '#E8E4DD',
+            teal: {
+              50: '#EFFEFA',
+              100: '#C7FFF4',
+              200: '#90FFEA',
+              300: '#51F7DD',
+              400: '#1DE4C8',
+              500: '#05C9AF',
+              600: '#00A391',
+              700: '#058276',
+              800: '#0A675F',
+              900: '#0D554F',
+            },
+            coral: {
+              400: '#FF8A7A',
+              500: '#FF6B5B',
+              600: '#E8524A',
+            },
+            navy: {
+              800: '#1E3A4C',
+              900: '#0F2533',
+            }
+          },
+          fontFamily: {
+            display: ['DM Serif Display', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    /* Subtle grain texture overlay */
+    .grain::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.03;
+      z-index: 1000;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Smooth section transitions */
+    section {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card hover lift */
+    .card-lift {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+    .card-lift:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px -12px rgba(5, 85, 79, 0.15);
+    }
+
+    /* Branch expand animation */
+    .branch-content {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+    }
+    .branch-content.expanded {
+      max-height: 2000px;
+      opacity: 1;
+    }
+
+    /* Pulse ring for CTA */
+    .pulse-ring {
+      position: relative;
+    }
+    .pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #05C9AF, #1DE4C8);
+      opacity: 0;
+      z-index: -1;
+      animation: pulseRing 2s ease-in-out infinite;
+    }
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(1); opacity: 0; }
+      50% { transform: scale(1.04); opacity: 0.3; }
+    }
+
+    /* Persona card glow */
+    .persona-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .persona-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--accent-color);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .persona-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    /* Decorative blob */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Stats number animation */
+    .stat-number {
+      background: linear-gradient(135deg, #0D554F 0%, #05C9AF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F5F1EB;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #05C9AF;
+      border-radius: 4px;
+    }
+
+    /* Border width 3 */
+    .border-3 {
+      border-width: 3px;
+    }
+
+    /* Package tab selected states */
+    .package-tab.scale-105 {
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-cream font-sans text-navy-900 grain">
+
+  <!-- Navigation -->
+  <nav class="bg-cream/90 backdrop-blur-xl border-b border-warmgray/50 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-500/20">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-coral-500 rounded-full border-2 border-cream"></div>
+        </div>
+        <div>
+          <span class="font-display text-2xl text-navy-900">Vitalita</span>
+          <span class="block text-xs text-teal-700 font-medium tracking-wide uppercase">by Komfi</span>
+        </div>
+      </div>
+      <div class="flex gap-2 bg-sand rounded-2xl p-1.5">
+        <button onclick="showSection('home')" class="nav-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-white text-teal-800 shadow-sm" id="btn-home">
+          Přehled
+        </button>
+        <button onclick="showSection('mindmap')" class="nav-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-navy-800/60 hover:text-navy-800" id="btn-mindmap">
+          Mindmap
+        </button>
+        <button onclick="showSection('flow')" class="nav-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-navy-800/60 hover:text-navy-800" id="btn-flow">
+          Flow
+        </button>
+        <button onclick="showSection('analysis')" class="nav-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all text-navy-800/60 hover:text-navy-800" id="btn-analysis">
+          Analýza
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HOME SECTION -->
+  <section id="section-home" class="relative overflow-hidden">
+    <!-- Decorative blobs -->
+    <div class="blob w-96 h-96 bg-teal-200 top-20 -right-48"></div>
+    <div class="blob w-64 h-64 bg-coral-400/30 bottom-40 -left-32"></div>
+
+    <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+      <!-- Hero -->
+      <div class="text-center mb-20">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-800 text-sm font-medium mb-8">
+          <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+          Prototyp služby
+        </div>
+
+        <h1 class="font-display text-6xl md:text-7xl text-navy-900 mb-6 leading-tight">
+          Zdraví pod<br>
+          <span class="text-teal-600">kontrolou</span>
+        </h1>
+
+        <p class="text-xl text-navy-800/70 max-w-xl mx-auto leading-relaxed mb-10">
+          Dlouhodobé sledování vašeho zdraví z pohodlí domova.
+          Trendy, ne jednorázová čísla.
+        </p>
+
+        <button onclick="showSection('flow')" class="pulse-ring inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white font-semibold rounded-2xl shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 transition-shadow">
+          Začít výběr
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="grid md:grid-cols-3 gap-6 mb-16">
+        <button onclick="showSection('mindmap')" class="card-lift p-8 rounded-3xl bg-white border border-warmgray/50 text-left group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-navy-900 mb-2">Mindmap struktury</h3>
+          <p class="text-navy-800/60 leading-relaxed">Interaktivní mapa konceptů, person a balíčků služby</p>
+        </button>
+
+        <button onclick="showSection('flow')" class="card-lift p-8 rounded-3xl bg-white border border-warmgray/50 text-left group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-navy-900 mb-2">Zákaznický flow</h3>
+          <p class="text-navy-800/60 leading-relaxed">Prototyp objednávkového procesu a výběr persony</p>
+        </button>
+
+        <button onclick="showSection('analysis')" class="card-lift p-8 rounded-3xl bg-white border border-warmgray/50 text-left group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-navy-900 mb-2">Kritická analýza</h3>
+          <p class="text-navy-800/60 leading-relaxed">Rozbor balíčků, cenová strategie a doporučení</p>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-6 text-center border border-warmgray/50">
+          <div class="text-4xl font-bold stat-number mb-1">25+</div>
+          <div class="text-sm text-navy-800/60 font-medium">Biomarkerů</div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 text-center border border-warmgray/50">
+          <div class="text-4xl font-bold stat-number mb-1">3</div>
+          <div class="text-sm text-navy-800/60 font-medium">Balíčky</div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 text-center border border-warmgray/50">
+          <div class="text-4xl font-bold stat-number mb-1">4</div>
+          <div class="text-sm text-navy-800/60 font-medium">Persony</div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 text-center border border-warmgray/50">
+          <div class="text-4xl font-bold stat-number mb-1">2-4×</div>
+          <div class="text-sm text-navy-800/60 font-medium">ročně</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MINDMAP SECTION -->
+  <section id="section-mindmap" class="max-w-7xl mx-auto px-6 py-12 hidden">
+    <div class="text-center mb-12">
+      <h2 class="font-display text-4xl text-navy-900 mb-3">Struktura služby</h2>
+      <p class="text-navy-800/60">Interaktivní mindmap konceptů Vitalita</p>
+    </div>
+
+    <!-- Root Node -->
+    <div class="flex flex-col items-center">
+      <div class="relative mb-12">
+        <div class="absolute inset-0 bg-teal-500 rounded-3xl blur-xl opacity-30"></div>
+        <div class="relative bg-gradient-to-br from-teal-600 to-teal-800 text-white px-10 py-8 rounded-3xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/20 flex items-center justify-center">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="font-display text-3xl mb-2">VITALITA</div>
+          <div class="text-teal-100 text-lg">Dlouhodobé sledování zdraví</div>
+        </div>
+      </div>
+
+      <!-- Main Branches -->
+      <div class="grid md:grid-cols-4 gap-6 w-full">
+
+        <!-- Branch 1: Pro koho -->
+        <div class="space-y-4">
+          <button onclick="toggleBranch('personas')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-between shadow-lg shadow-blue-500/20">
+            <div class="flex items-center gap-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+              <span>Pro koho</span>
+            </div>
+            <span id="toggle-personas" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xl">+</span>
+          </button>
+
+          <div id="branch-personas" class="branch-content space-y-3 pl-4 border-l-4 border-blue-200">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #3B82F6">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl">💪</div>
+                <div>
+                  <div class="font-bold text-navy-900">50–65 let</div>
+                  <div class="text-sm text-navy-800/60">Prevence a přehled</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Cukrovka v rodině</span>
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Cholesterol</span>
+              </div>
+              <div class="text-sm font-semibold text-teal-600">→ PŘEHLED</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #10B981">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl">🏠</div>
+                <div>
+                  <div class="font-bold text-navy-900">65–75 let</div>
+                  <div class="text-sm text-navy-800/60">Samostatnost co nejdéle</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Únava</span>
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Tlak</span>
+              </div>
+              <div class="text-sm font-semibold text-amber-600">→ KONTROLA</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #8B5CF6">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-2xl">👨‍👩‍👧</div>
+                <div>
+                  <div class="font-bold text-navy-900">Pečující rodina</div>
+                  <div class="text-sm text-navy-800/60">Klid a jistota pro rodiče</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Žijí daleko</span>
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Nechodí k lékaři</span>
+              </div>
+              <div class="text-sm font-semibold text-coral-600">→ DOHLED</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #EF4444">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-2xl">🏥</div>
+                <div>
+                  <div class="font-bold text-navy-900">Zhoršující se zdraví</div>
+                  <div class="text-sm text-navy-800/60">Po nemoci / hospitalizaci</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Po operaci</span>
+                <span class="text-xs px-3 py-1.5 bg-sand rounded-full text-navy-800/70 font-medium">Chronická nemoc</span>
+              </div>
+              <div class="text-sm font-semibold text-coral-600">→ DOHLED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branch 2: Koncepty -->
+        <div class="space-y-4">
+          <button onclick="toggleBranch('concepts')" class="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:from-teal-600 hover:to-teal-700 transition-all flex items-center justify-between shadow-lg shadow-teal-500/20">
+            <div class="flex items-center gap-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+              </svg>
+              <span>Koncepty</span>
+            </div>
+            <span id="toggle-concepts" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xl">+</span>
+          </button>
+
+          <div id="branch-concepts" class="branch-content space-y-3 pl-4 border-l-4 border-teal-200">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30">
+              <div class="font-bold text-navy-900 mb-1">Základní stabilita</div>
+              <div class="text-sm text-teal-600 italic mb-3">"Drží tělo rezervy?"</div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Výživa</span>
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Zánět</span>
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Metabolismus</span>
+              </div>
+              <div class="text-xs text-navy-800/50 font-medium">6 markerů</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30">
+              <div class="font-bold text-navy-900 mb-1">Rizika náhlých zlomů</div>
+              <div class="text-sm text-teal-600 italic mb-3">"Hrozí infarkt, mrtvice nebo diabetes?"</div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Srdce a cévy</span>
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Cukr</span>
+              </div>
+              <div class="text-xs text-navy-800/50 font-medium">6 markerů</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30">
+              <div class="font-bold text-navy-900 mb-1">Komplexní dohled</div>
+              <div class="text-sm text-teal-600 italic mb-3">"Co se děje v těle?"</div>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Orgány</span>
+                <span class="text-xs px-3 py-1.5 bg-teal-50 rounded-full text-teal-700 font-medium">Komplikace</span>
+              </div>
+              <div class="text-xs text-navy-800/50 font-medium">8 markerů</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branch 3: Balíčky -->
+        <div class="space-y-4">
+          <button onclick="toggleBranch('packages')" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-between shadow-lg shadow-amber-500/20">
+            <div class="flex items-center gap-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+              <span>Balíčky</span>
+            </div>
+            <span id="toggle-packages" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xl">+</span>
+          </button>
+
+          <div id="branch-packages" class="branch-content space-y-3 pl-4 border-l-4 border-amber-200">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #10B981">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <div class="font-bold text-navy-900 text-lg">PŘEHLED</div>
+              </div>
+              <div class="text-sm text-navy-800/60 mb-3">Drží moje tělo?</div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-2xl font-bold text-emerald-600">890 Kč</span>
+                <span class="text-xs text-navy-800/50 font-medium bg-sand px-3 py-1 rounded-full">2× ročně</span>
+              </div>
+              <div class="text-xs text-navy-800/50">6 markerů • 50-65 let</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #F59E0B">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <div class="font-bold text-navy-900 text-lg">KONTROLA</div>
+              </div>
+              <div class="text-sm text-navy-800/60 mb-3">Hrozí mi něco?</div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-2xl font-bold text-amber-600">1 490 Kč</span>
+                <span class="text-xs text-navy-800/50 font-medium bg-sand px-3 py-1 rounded-full">2× ročně</span>
+              </div>
+              <div class="text-xs text-navy-800/50">12 markerů • 65-75 let</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30" style="border-left: 4px solid #EF4444">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-coral-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <div class="font-bold text-navy-900 text-lg">DOHLED</div>
+              </div>
+              <div class="text-sm text-navy-800/60 mb-3">Co se děje v těle?</div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-2xl font-bold text-coral-600">2 490 Kč</span>
+                <span class="text-xs text-navy-800/50 font-medium bg-sand px-3 py-1 rounded-full">4× ročně</span>
+              </div>
+              <div class="text-xs text-navy-800/50">20 markerů • 75+ let</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branch 4: Trend -->
+        <div class="space-y-4">
+          <button onclick="toggleBranch('trend')" class="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:from-purple-600 hover:to-violet-700 transition-all flex items-center justify-between shadow-lg shadow-purple-500/20">
+            <div class="flex items-center gap-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+              <span>Trend</span>
+            </div>
+            <span id="toggle-trend" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xl">+</span>
+          </button>
+
+          <div id="branch-trend" class="branch-content space-y-3 pl-4 border-l-4 border-purple-200">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30">
+              <div class="font-bold text-navy-900 mb-3">Proč trend?</div>
+              <ul class="text-sm text-navy-800/70 space-y-2">
+                <li class="flex items-start gap-2">
+                  <span class="text-purple-500 mt-0.5">•</span>
+                  Jednorázový výsledek nestačí
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-purple-500 mt-0.5">•</span>
+                  Změna v čase je klíčová
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-purple-500 mt-0.5">•</span>
+                  Včasné zachycení zhoršení
+                </li>
+              </ul>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-warmgray/30">
+              <div class="font-bold text-navy-900 mb-3">Frekvence</div>
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center">
+                  <span class="text-teal-600 font-semibold">2× ročně</span>
+                  <span class="text-navy-800/50">Základní trend</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-amber-600 font-semibold">4× ročně</span>
+                  <span class="text-navy-800/50">Riziko / zhoršování</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-2xl p-5 border border-purple-100">
+              <div class="font-bold text-purple-900 mb-2">Princip</div>
+              <div class="text-sm text-purple-800">
+                Ne víc věcí, ale <strong>stejné věci opakovaně</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLOW SECTION -->
+  <section id="section-flow" class="max-w-5xl mx-auto px-6 py-12 hidden">
+    <!-- Progress Steps -->
+    <div class="flex items-center justify-center gap-4 mb-12">
+      <div class="flow-step flex items-center gap-2" data-step="1">
+        <div class="step-circle w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+        <span class="text-sm font-medium text-teal-700 hidden md:block">Kdo jste</span>
+      </div>
+      <div class="w-12 h-0.5 bg-warmgray step-line" data-after="1"></div>
+      <div class="flow-step flex items-center gap-2 opacity-40" data-step="2">
+        <div class="step-circle w-10 h-10 rounded-full bg-warmgray text-navy-800/60 flex items-center justify-center font-bold text-sm">2</div>
+        <span class="text-sm font-medium text-navy-800/60 hidden md:block">Balíček</span>
+      </div>
+      <div class="w-12 h-0.5 bg-warmgray step-line" data-after="2"></div>
+      <div class="flow-step flex items-center gap-2 opacity-40" data-step="3">
+        <div class="step-circle w-10 h-10 rounded-full bg-warmgray text-navy-800/60 flex items-center justify-center font-bold text-sm">3</div>
+        <span class="text-sm font-medium text-navy-800/60 hidden md:block">Shrnutí</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Persona Selection -->
+    <div id="flow-step-1">
+      <div class="text-center mb-10">
+        <h2 class="font-display text-4xl text-navy-900 mb-4">Kdo jste?</h2>
+        <p class="text-xl text-navy-800/60">Vyberte situaci, která vám je nejbližší</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <button onclick="selectPersona('young')" class="persona-card card-lift p-8 rounded-3xl text-left bg-white border border-warmgray/50" style="--accent-color: #3B82F6">
+          <div class="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-4xl mb-6">💪</div>
+          <div class="text-2xl font-bold text-navy-900 mb-2">Je mi 50–65 let</div>
+          <div class="text-navy-800/60 mb-5 leading-relaxed">Chci mít přehled a předejít problémům</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-sm px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-medium">Cukrovka v rodině</span>
+            <span class="text-sm px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-medium">Cholesterol</span>
+          </div>
+        </button>
+
+        <button onclick="selectPersona('senior')" class="persona-card card-lift p-8 rounded-3xl text-left bg-white border border-warmgray/50" style="--accent-color: #10B981">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-4xl mb-6">🏠</div>
+          <div class="text-2xl font-bold text-navy-900 mb-2">Je mi 65–75 let</div>
+          <div class="text-navy-800/60 mb-5 leading-relaxed">Chci zůstat samostatný/á co nejdéle</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-sm px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 font-medium">Únava</span>
+            <span class="text-sm px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 font-medium">Tlak</span>
+          </div>
+        </button>
+
+        <button onclick="selectPersona('family')" class="persona-card card-lift p-8 rounded-3xl text-left bg-white border border-warmgray/50" style="--accent-color: #8B5CF6">
+          <div class="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center text-4xl mb-6">👨‍👩‍👧</div>
+          <div class="text-2xl font-bold text-navy-900 mb-2">Starám se o rodiče</div>
+          <div class="text-navy-800/60 mb-5 leading-relaxed">Chci pro ně klid a jistotu</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-sm px-4 py-2 rounded-full bg-purple-50 text-purple-700 font-medium">Žijí daleko</span>
+            <span class="text-sm px-4 py-2 rounded-full bg-purple-50 text-purple-700 font-medium">Nechodí k lékaři</span>
+          </div>
+        </button>
+
+        <button onclick="selectPersona('fragile')" class="persona-card card-lift p-8 rounded-3xl text-left bg-white border border-warmgray/50" style="--accent-color: #EF4444">
+          <div class="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center text-4xl mb-6">🏥</div>
+          <div class="text-2xl font-bold text-navy-900 mb-2">Zdraví se zhoršuje</div>
+          <div class="text-navy-800/60 mb-5 leading-relaxed">Po nemoci nebo hospitalizaci</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-sm px-4 py-2 rounded-full bg-red-50 text-red-700 font-medium">Po operaci</span>
+            <span class="text-sm px-4 py-2 rounded-full bg-red-50 text-red-700 font-medium">Pády</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="flex justify-center gap-8 mt-14 py-6 border-t border-warmgray">
+        <div class="flex items-center gap-2 text-navy-800/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span class="text-sm font-medium">Domácí odběry</span>
+        </div>
+        <div class="flex items-center gap-2 text-navy-800/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+          <span class="text-sm font-medium">Trend v čase</span>
+        </div>
+        <div class="flex items-center gap-2 text-navy-800/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="text-sm font-medium">AI interpretace</span>
+        </div>
+        <div class="flex items-center gap-2 text-navy-800/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span class="text-sm font-medium">Konzultace</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Package Selection -->
+    <div id="flow-step-2" class="hidden">
+      <button onclick="goToFlowStep(1)" class="mb-6 px-4 py-2 rounded-xl bg-white border border-warmgray text-navy-800/70 hover:bg-sand transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Zpět na výběr
+      </button>
+
+      <!-- Selected Persona Header -->
+      <div id="selected-persona-header" class="bg-white rounded-3xl p-8 mb-8 border border-warmgray/30">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Package Selection -->
+      <div class="bg-white rounded-3xl p-8 border border-warmgray/30">
+        <div class="flex items-center gap-3 mb-8">
+          <span id="recommended-badge" class="px-4 py-2 rounded-full text-sm font-semibold"></span>
+        </div>
+
+        <!-- Package Tabs -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <button onclick="selectPackage('prehled')" id="pkg-tab-prehled" class="package-tab p-6 rounded-2xl text-center relative transition-all border-3 border-warmgray hover:border-emerald-300">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="text-lg font-bold text-navy-900">PŘEHLED</div>
+            <div class="text-sm text-navy-800/60 mb-3">Drží moje tělo?</div>
+            <div class="text-2xl font-bold text-emerald-600">890 Kč</div>
+            <div class="text-xs text-navy-800/50">/ test</div>
+          </button>
+
+          <button onclick="selectPackage('kontrola')" id="pkg-tab-kontrola" class="package-tab p-6 rounded-2xl text-center relative transition-all border-3 border-warmgray hover:border-amber-300">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-amber-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="text-lg font-bold text-navy-900">KONTROLA</div>
+            <div class="text-sm text-navy-800/60 mb-3">Hrozí mi něco?</div>
+            <div class="text-2xl font-bold text-amber-600">1 490 Kč</div>
+            <div class="text-xs text-navy-800/50">/ test</div>
+          </button>
+
+          <button onclick="selectPackage('dohled')" id="pkg-tab-dohled" class="package-tab p-6 rounded-2xl text-center relative transition-all border-3 border-warmgray hover:border-coral-300">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-coral-500 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="text-lg font-bold text-navy-900">DOHLED</div>
+            <div class="text-sm text-navy-800/60 mb-3">Co se děje v těle?</div>
+            <div class="text-2xl font-bold text-coral-600">2 490 Kč</div>
+            <div class="text-xs text-navy-800/50">/ test</div>
+          </button>
+        </div>
+
+        <!-- Selected Package Detail -->
+        <div id="package-detail" class="rounded-3xl p-8 border-2">
+          <!-- Filled by JS -->
+        </div>
+
+        <!-- Bistro Upsell -->
+        <div class="mt-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 flex items-center gap-6 border border-amber-200">
+          <div class="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl flex-shrink-0">🍽️</div>
+          <div class="flex-1">
+            <div class="font-bold text-navy-900 text-lg mb-1">Máte Komfi Bistro?</div>
+            <div class="text-navy-800/70">Propojte Vitalitu s jídelníčkem. Dostanete personalizovaná výživová doporučení.</div>
+          </div>
+          <div class="px-6 py-3 rounded-xl bg-amber-500 text-white font-bold whitespace-nowrap">
+            Bundle: −20%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Summary -->
+    <div id="flow-step-3" class="hidden">
+      <button onclick="goToFlowStep(2)" class="mb-6 px-4 py-2 rounded-xl bg-white border border-warmgray text-navy-800/70 hover:bg-sand transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Zpět na balíčky
+      </button>
+
+      <div class="max-w-xl mx-auto">
+        <div class="bg-white rounded-3xl p-10 border border-warmgray/30 text-center">
+          <div id="summary-icon" class="w-24 h-24 mx-auto mb-6 rounded-3xl flex items-center justify-center">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+
+          <h2 class="font-display text-3xl text-navy-900 mb-2">Skvělá volba!</h2>
+          <p id="summary-text" class="text-navy-800/60 mb-8"></p>
+
+          <div class="bg-sand rounded-2xl p-6 mb-8">
+            <div class="text-navy-800/60 mb-2">Roční program</div>
+            <div id="summary-price" class="text-5xl font-bold text-navy-900 mb-1"></div>
+            <div id="summary-monthly" class="text-navy-800/60"></div>
+          </div>
+
+          <!-- What's included -->
+          <div class="text-left mb-8">
+            <div class="font-semibold text-navy-900 mb-4">Co je zahrnuto:</div>
+            <div id="summary-features" class="space-y-3">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+
+          <button class="w-full py-5 rounded-2xl bg-gradient-to-r from-teal-600 to-teal-500 text-white text-lg font-bold shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 transition-all flex items-center justify-center gap-3">
+            Objednat
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          </button>
+
+          <p class="text-sm text-navy-800/50 mt-6">
+            Kit doručíme do 3 dnů. Výsledky do 5 dnů od odběru.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANALYSIS SECTION -->
+  <section id="section-analysis" class="max-w-5xl mx-auto px-6 py-12 hidden">
+    <div class="text-center mb-12">
+      <h2 class="font-display text-4xl text-navy-900 mb-3">Kritická analýza</h2>
+      <p class="text-navy-800/60">Rozbor a doporučení pro Komfi Vitalita</p>
+    </div>
+
+    <!-- Overview -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-warmgray/30 mb-8">
+      <h3 class="text-2xl font-bold text-navy-900 mb-6">Klíčové otázky</h3>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h4 class="font-bold text-teal-600 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Co dává smysl?
+          </h4>
+          <ul class="space-y-3 text-navy-800/70">
+            <li class="flex items-start gap-3">
+              <span class="text-teal-500 mt-0.5">✓</span>
+              <span><strong class="text-navy-900">Trend > jednotlivá měření</strong> – hlavní diferenciátor</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-teal-500 mt-0.5">✓</span>
+              <span><strong class="text-navy-900">Propojení s Bistro</strong> – unikátní hodnota</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-teal-500 mt-0.5">✓</span>
+              <span><strong class="text-navy-900">Domácí odběry</strong> – pohodlí pro seniory</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-teal-500 mt-0.5">✓</span>
+              <span><strong class="text-navy-900">Jasná interpretace</strong> – ne jen čísla</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-coral-500 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Rizika / Otázky
+          </h4>
+          <ul class="space-y-3 text-navy-800/70">
+            <li class="flex items-start gap-3">
+              <span class="text-amber-500 mt-0.5">!</span>
+              <span><strong class="text-navy-900">Komplexita balíčků</strong> – příliš mnoho markerů v Dohledu?</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-amber-500 mt-0.5">!</span>
+              <span><strong class="text-navy-900">Cenová citlivost</strong> – 50+ jsou cenově citliví</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-amber-500 mt-0.5">!</span>
+              <span><strong class="text-navy-900">Konkurence</strong> – EUC, Synlab mají podobné služby</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-amber-500 mt-0.5">!</span>
+              <span><strong class="text-navy-900">Regulace</strong> – domácí odběry mají limity</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Table -->
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-warmgray/30 mb-8">
+      <h3 class="text-2xl font-bold text-navy-900 mb-6">Cenová analýza</h3>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b-2 border-warmgray">
+              <th class="text-left py-4 font-semibold text-navy-900">Balíček</th>
+              <th class="text-right py-4 font-semibold text-navy-900">Jednorázově</th>
+              <th class="text-right py-4 font-semibold text-navy-900">Ročně</th>
+              <th class="text-right py-4 font-semibold text-navy-900">Měsíčně</th>
+              <th class="text-right py-4 font-semibold text-navy-900">Per marker</th>
+              <th class="text-center py-4 font-semibold text-navy-900">Hodnocení</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-warmgray/50">
+              <td class="py-4 font-semibold flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                PŘEHLED
+              </td>
+              <td class="text-right text-navy-800/70">890 Kč</td>
+              <td class="text-right text-navy-800/70">1 580 Kč</td>
+              <td class="text-right text-teal-600 font-bold">132 Kč</td>
+              <td class="text-right text-navy-800/70">148 Kč</td>
+              <td class="text-center"><span class="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold">OK</span></td>
+            </tr>
+            <tr class="border-b border-warmgray/50 bg-amber-50/50">
+              <td class="py-4 font-semibold flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                KONTROLA
+              </td>
+              <td class="text-right text-navy-800/70">1 490 Kč</td>
+              <td class="text-right text-navy-800/70">2 680 Kč</td>
+              <td class="text-right text-amber-600 font-bold">223 Kč</td>
+              <td class="text-right text-navy-800/70">107 Kč</td>
+              <td class="text-center"><span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">Best value</span></td>
+            </tr>
+            <tr>
+              <td class="py-4 font-semibold flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-coral-500"></span>
+                DOHLED
+              </td>
+              <td class="text-right text-navy-800/70">2 490 Kč</td>
+              <td class="text-right text-navy-800/70">8 960 Kč</td>
+              <td class="text-right text-coral-600 font-bold">747 Kč</td>
+              <td class="text-right text-navy-800/70">124 Kč</td>
+              <td class="text-center"><span class="px-3 py-1 bg-coral-100 text-coral-700 rounded-full text-xs font-semibold">Premium</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 p-5 bg-gradient-to-r from-blue-50 to-teal-50 rounded-2xl border border-teal-100">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-teal-500 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <strong class="text-teal-800">Insight</strong>
+            <p class="text-teal-700 mt-1">
+              KONTROLA má nejlepší hodnotu per marker (107 Kč). Ale DOHLED měsíčně (747 Kč)
+              může být moc na důchodce. Zvážit nižší frekvenci nebo nižší cenu.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="relative overflow-hidden rounded-3xl">
+      <div class="absolute inset-0 bg-gradient-to-br from-teal-600 via-teal-700 to-navy-800"></div>
+      <div class="absolute inset-0 opacity-10">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100" height="100" fill="url(#grid)"/>
+        </svg>
+      </div>
+
+      <div class="relative p-8 text-white">
+        <h3 class="text-2xl font-bold mb-8 flex items-center gap-3">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Doporučení pro Komfi Vitalita
+        </h3>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">1</div>
+              <h4 class="font-bold text-lg">Zjednodušit komunikaci</h4>
+            </div>
+            <ul class="space-y-2 text-teal-100">
+              <li>• "Drží tělo?" → "Jak jsem na tom?"</li>
+              <li>• Méně technických termínů</li>
+              <li>• Semafor report jako hlavní výstup</li>
+            </ul>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">2</div>
+              <h4 class="font-bold text-lg">Posílit diferenciaci</h4>
+            </div>
+            <ul class="space-y-2 text-teal-100">
+              <li>• TREND je killer feature – zdůraznit</li>
+              <li>• Propojení Bistro → Vitalita → Živiny</li>
+              <li>• "Vaše data, váš plán"</li>
+            </ul>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">3</div>
+              <h4 class="font-bold text-lg">Cenová strategie</h4>
+            </div>
+            <ul class="space-y-2 text-teal-100">
+              <li>• Entry: 599 Kč (3 markery) – získat data</li>
+              <li>• Standard: 1 290 Kč (KONTROLA)</li>
+              <li>• Premium: 1 990 Kč (DOHLED 2× ročně)</li>
+            </ul>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl font-bold">4</div>
+              <h4 class="font-bold text-lg">Go-to-market</h4>
+            </div>
+            <ul class="space-y-2 text-teal-100">
+              <li>• Začít s Bistro klienty (warm leads)</li>
+              <li>• Bundle Bistro + Vitalita (−20%)</li>
+              <li>• Obce jako B2B kanál</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer spacer -->
+  <div class="h-16"></div>
+
+  <script>
+    // Show/hide sections
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+      // Show selected section
+      const section = document.getElementById('section-' + sectionId);
+      section.classList.remove('hidden');
+
+      // Re-trigger animation
+      section.style.animation = 'none';
+      section.offsetHeight; // Trigger reflow
+      section.style.animation = null;
+
+      // Reset flow if navigating to it
+      if (sectionId === 'flow') {
+        resetFlow();
+      }
+
+      // Update nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-teal-800', 'shadow-sm');
+        btn.classList.add('text-navy-800/60');
+      });
+      const activeBtn = document.getElementById('btn-' + sectionId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-navy-800/60');
+        activeBtn.classList.add('bg-white', 'text-teal-800', 'shadow-sm');
+      }
+    }
+
+    // Toggle mindmap branches with animation
+    function toggleBranch(branchId) {
+      const branch = document.getElementById('branch-' + branchId);
+      const toggle = document.getElementById('toggle-' + branchId);
+
+      if (branch.classList.contains('expanded')) {
+        branch.classList.remove('expanded');
+        toggle.textContent = '+';
+      } else {
+        branch.classList.add('expanded');
+        toggle.textContent = '−';
+      }
+    }
+
+    // ============================================
+    // FLOW DATA & STATE
+    // ============================================
+
+    const personas = {
+      young: {
+        emoji: '💪',
+        title: 'Je mi 50–65 let',
+        subtitle: 'Chci mít přehled a předejít problémům',
+        concerns: ['Cukrovka v rodině', 'Cholesterol'],
+        recommended: 'prehled',
+        color: '#3B82F6',
+        bgColor: 'bg-blue-100'
+      },
+      senior: {
+        emoji: '🏠',
+        title: 'Je mi 65–75 let',
+        subtitle: 'Chci zůstat samostatný/á co nejdéle',
+        concerns: ['Únava', 'Tlak'],
+        recommended: 'kontrola',
+        color: '#10B981',
+        bgColor: 'bg-emerald-100'
+      },
+      family: {
+        emoji: '👨‍👩‍👧',
+        title: 'Starám se o rodiče',
+        subtitle: 'Chci pro ně klid a jistotu',
+        concerns: ['Žijí daleko', 'Nechodí k lékaři'],
+        recommended: 'dohled',
+        color: '#8B5CF6',
+        bgColor: 'bg-purple-100'
+      },
+      fragile: {
+        emoji: '🏥',
+        title: 'Zdraví se zhoršuje',
+        subtitle: 'Po nemoci nebo hospitalizaci',
+        concerns: ['Po operaci', 'Chronická nemoc'],
+        recommended: 'dohled',
+        color: '#EF4444',
+        bgColor: 'bg-red-100'
+      }
+    };
+
+    const packages = {
+      prehled: {
+        name: 'PŘEHLED',
+        tagline: 'Drží moje tělo?',
+        price: 890,
+        yearPrice: 1580,
+        frequency: '2× ročně',
+        color: '#10B981',
+        colorClass: 'emerald',
+        markers: [
+          { name: 'Krevní obraz', icon: '🩸', why: 'Anémie, infekce, imunita' },
+          { name: 'CRP', icon: '🔥', why: 'Zánět v těle' },
+          { name: 'Albumin', icon: '🥩', why: 'Stav výživy, funkce jater' },
+          { name: 'Glukóza', icon: '🍬', why: 'Cukrovka screening' },
+          { name: 'Kreatinin + GFR', icon: '💧', why: 'Funkce ledvin' },
+          { name: 'Vitamin D', icon: '☀️', why: 'Kosti, imunita, nálada' }
+        ],
+        output: ['Semafor report', 'Srovnání v čase', '1 strana, 3 min čtení']
+      },
+      kontrola: {
+        name: 'KONTROLA',
+        tagline: 'Hrozí mi něco?',
+        price: 1490,
+        yearPrice: 2680,
+        frequency: '2× ročně',
+        color: '#F59E0B',
+        colorClass: 'amber',
+        markers: [
+          { name: 'Krevní obraz', icon: '🩸', why: 'Anémie, infekce, imunita' },
+          { name: 'CRP', icon: '🔥', why: 'Zánět v těle' },
+          { name: 'Albumin', icon: '🥩', why: 'Stav výživy' },
+          { name: 'Glukóza', icon: '🍬', why: 'Cukrovka screening' },
+          { name: 'Kreatinin + GFR', icon: '💧', why: 'Funkce ledvin' },
+          { name: 'Vitamin D', icon: '☀️', why: 'Kosti, imunita' },
+          { name: 'Cholesterol celkový', icon: '❤️', why: 'Kardio riziko' },
+          { name: 'LDL cholesterol', icon: '❤️', why: '"Špatný" cholesterol' },
+          { name: 'HDL cholesterol', icon: '❤️', why: '"Dobrý" cholesterol' },
+          { name: 'Triglyceridy', icon: '❤️', why: 'Tuky v krvi' },
+          { name: 'HbA1c', icon: '🍬', why: 'Dlouhodobý cukr (3 měsíce)' },
+          { name: 'Krevní tlak', icon: '💓', why: 'Hypertenze' }
+        ],
+        output: ['Trend report', 'Kardio + diabetes skóre', 'Personalizovaná doporučení', 'Sync s Bistro']
+      },
+      dohled: {
+        name: 'DOHLED',
+        tagline: 'Co se děje v těle?',
+        price: 2490,
+        yearPrice: 8960,
+        frequency: '4× ročně',
+        color: '#EF4444',
+        colorClass: 'coral',
+        markers: [
+          { name: 'Krevní obraz', icon: '🩸', why: 'Anémie, infekce, imunita' },
+          { name: 'CRP', icon: '🔥', why: 'Zánět v těle' },
+          { name: 'Albumin', icon: '🥩', why: 'Stav výživy' },
+          { name: 'Glukóza', icon: '🍬', why: 'Cukrovka' },
+          { name: 'Kreatinin + GFR', icon: '💧', why: 'Ledviny' },
+          { name: 'Vitamin D', icon: '☀️', why: 'Kosti, imunita' },
+          { name: 'Lipidový panel', icon: '❤️', why: 'Cholesterol komplet' },
+          { name: 'HbA1c', icon: '🍬', why: 'Dlouhodobý cukr' },
+          { name: 'Krevní tlak', icon: '💓', why: 'Hypertenze' },
+          { name: 'ALT + AST', icon: '🫀', why: 'Játra - poškození' },
+          { name: 'GGT + ALP + Bilirubin', icon: '🫀', why: 'Játra komplet' },
+          { name: 'TSH + fT4', icon: '🦋', why: 'Štítná žláza' },
+          { name: 'Minerály (Na, K, Ca, Mg)', icon: '💎', why: 'Srdce, svaly' },
+          { name: 'Moč chemicky', icon: '💧', why: 'Ledviny, infekce' },
+          { name: 'B12 + Folát', icon: '☀️', why: 'Energie, nervy' },
+          { name: 'Ferritin', icon: '🩸', why: 'Zásoby železa' }
+        ],
+        output: ['Komplexní report', '15min konzultace', 'Sdílení s lékařem', 'Proaktivní follow-up']
+      }
+    };
+
+    let flowState = {
+      step: 1,
+      selectedPersona: null,
+      selectedPackage: null,
+      frequency: 'year'
+    };
+
+    // ============================================
+    // FLOW NAVIGATION
+    // ============================================
+
+    function goToFlowStep(step) {
+      flowState.step = step;
+
+      // Hide all steps
+      document.getElementById('flow-step-1').classList.add('hidden');
+      document.getElementById('flow-step-2').classList.add('hidden');
+      document.getElementById('flow-step-3').classList.add('hidden');
+
+      // Show current step
+      document.getElementById('flow-step-' + step).classList.remove('hidden');
+
+      // Update progress indicator
+      document.querySelectorAll('.flow-step').forEach((el, i) => {
+        const stepNum = i + 1;
+        const circle = el.querySelector('.step-circle');
+        if (stepNum < step) {
+          el.classList.remove('opacity-40');
+          circle.classList.remove('bg-warmgray', 'text-navy-800/60');
+          circle.classList.add('bg-teal-600', 'text-white');
+        } else if (stepNum === step) {
+          el.classList.remove('opacity-40');
+          circle.classList.remove('bg-warmgray', 'text-navy-800/60');
+          circle.classList.add('bg-teal-600', 'text-white');
+        } else {
+          el.classList.add('opacity-40');
+          circle.classList.remove('bg-teal-600', 'text-white');
+          circle.classList.add('bg-warmgray', 'text-navy-800/60');
+        }
+      });
+
+      // Update connecting lines
+      document.querySelectorAll('.step-line').forEach(line => {
+        const afterStep = parseInt(line.dataset.after);
+        if (afterStep < step) {
+          line.classList.remove('bg-warmgray');
+          line.classList.add('bg-teal-600');
+        } else {
+          line.classList.remove('bg-teal-600');
+          line.classList.add('bg-warmgray');
+        }
+      });
+
+      // Scroll to top of section
+      document.getElementById('section-flow').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ============================================
+    // STEP 1: PERSONA SELECTION
+    // ============================================
+
+    function selectPersona(personaId) {
+      flowState.selectedPersona = personaId;
+      const persona = personas[personaId];
+      flowState.selectedPackage = persona.recommended;
+
+      // Update persona header in step 2
+      const header = document.getElementById('selected-persona-header');
+      header.innerHTML = `
+        <div class="flex items-start gap-6">
+          <div class="w-20 h-20 rounded-2xl ${persona.bgColor} flex items-center justify-center text-5xl flex-shrink-0">
+            ${persona.emoji}
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-navy-900 mb-1">${persona.title}</h2>
+            <p class="text-navy-800/60 mb-4">${persona.subtitle}</p>
+            <div class="flex gap-2">
+              ${persona.concerns.map(c => `<span class="px-3 py-1.5 rounded-full text-sm font-medium" style="background: ${persona.color}15; color: ${persona.color}">${c}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Update recommended badge
+      const pkg = packages[persona.recommended];
+      const badge = document.getElementById('recommended-badge');
+      badge.style.background = pkg.color + '15';
+      badge.style.color = pkg.color;
+      badge.textContent = '✨ Doporučujeme pro vás: ' + pkg.name;
+
+      // Update package selection
+      selectPackage(persona.recommended);
+
+      // Go to step 2
+      goToFlowStep(2);
+    }
+
+    // ============================================
+    // STEP 2: PACKAGE SELECTION
+    // ============================================
+
+    function selectPackage(packageId) {
+      flowState.selectedPackage = packageId;
+      const pkg = packages[packageId];
+      const persona = personas[flowState.selectedPersona];
+      const isRecommended = persona.recommended === packageId;
+
+      // Update tab styles
+      document.querySelectorAll('.package-tab').forEach(tab => {
+        tab.style.borderColor = '#E8E4DD';
+        tab.style.background = 'white';
+        tab.style.transform = 'scale(1)';
+        tab.style.boxShadow = 'none';
+        tab.querySelector('.recommended-label')?.remove();
+      });
+
+      const activeTab = document.getElementById('pkg-tab-' + packageId);
+      activeTab.style.borderColor = pkg.color;
+      activeTab.style.background = pkg.color + '10';
+      activeTab.style.transform = 'scale(1.02)';
+      activeTab.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1)';
+
+      // Add recommended label if applicable
+      if (isRecommended && !activeTab.querySelector('.recommended-label')) {
+        const label = document.createElement('div');
+        label.className = 'recommended-label absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white';
+        label.style.background = pkg.color;
+        label.textContent = 'DOPORUČENO';
+        activeTab.appendChild(label);
+      }
+
+      // Update package detail
+      const detail = document.getElementById('package-detail');
+      detail.style.background = pkg.color + '08';
+      detail.style.borderColor = pkg.color + '30';
+
+      const testsPerYear = packageId === 'dohled' ? 4 : 2;
+      const savings = (pkg.price * testsPerYear) - pkg.yearPrice;
+
+      detail.innerHTML = `
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background: ${pkg.color}">
+                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-navy-900">${pkg.name}</div>
+                <div class="text-navy-800/60">${pkg.tagline} • ${pkg.frequency}</div>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-4xl font-bold" style="color: ${pkg.color}">${pkg.price.toLocaleString('cs-CZ')} Kč</div>
+            <div class="text-navy-800/50">za jeden test</div>
+          </div>
+        </div>
+
+        <!-- Frequency Toggle -->
+        <div class="flex gap-3 mb-6 bg-white/50 p-2 rounded-xl w-fit">
+          <button onclick="setFrequency('single')" id="freq-single" class="freq-btn px-6 py-3 rounded-lg font-medium transition-all ${flowState.frequency === 'single' ? 'text-white shadow-lg' : 'text-navy-800/60 hover:bg-white'}" style="${flowState.frequency === 'single' ? 'background:' + pkg.color : ''}">
+            Jednorázově
+          </button>
+          <button onclick="setFrequency('year')" id="freq-year" class="freq-btn px-6 py-3 rounded-lg font-medium transition-all ${flowState.frequency === 'year' ? 'text-white shadow-lg' : 'text-navy-800/60 hover:bg-white'}" style="${flowState.frequency === 'year' ? 'background:' + pkg.color : ''}">
+            Roční program 💰
+          </button>
+        </div>
+
+        <!-- Year Price -->
+        <div id="year-price-box" class="${flowState.frequency === 'year' ? '' : 'hidden'} bg-white rounded-xl p-6 mb-6 flex justify-between items-center">
+          <div>
+            <div class="text-navy-800/60 mb-1">Roční program (${testsPerYear} testy)</div>
+            <div class="text-3xl font-bold text-navy-900">
+              ${pkg.yearPrice.toLocaleString('cs-CZ')} Kč
+              <span class="text-lg font-normal text-navy-800/50">/rok</span>
+            </div>
+          </div>
+          <div class="px-4 py-2 rounded-full bg-teal-100 text-teal-700 font-medium">
+            Ušetříte ${savings.toLocaleString('cs-CZ')} Kč
+          </div>
+        </div>
+
+        <!-- Markers -->
+        <div class="mb-6">
+          <button onclick="toggleMarkers()" id="markers-toggle" class="w-full p-4 rounded-xl bg-white flex justify-between items-center hover:bg-white/80 transition-colors">
+            <span class="font-semibold text-navy-900">🧪 Co měříme? (${pkg.markers.length} markerů)</span>
+            <span id="markers-arrow" class="transition-transform">▼</span>
+          </button>
+          <div id="markers-list" class="hidden mt-4 grid grid-cols-2 gap-3">
+            ${pkg.markers.map(m => `
+              <div class="bg-white p-4 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">${m.icon}</span>
+                <div>
+                  <div class="font-medium text-navy-900">${m.name}</div>
+                  <div class="text-xs text-navy-800/50">${m.why}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="bg-white rounded-xl p-6 mb-6">
+          <div class="font-semibold text-navy-900 mb-3">📋 Co dostanete:</div>
+          <div class="flex flex-wrap gap-2">
+            ${pkg.output.map(item => `<span class="px-4 py-2 bg-sand rounded-lg text-sm text-navy-800/80">✓ ${item}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button onclick="goToFlowStep(3); updateSummary();" class="w-full py-5 rounded-2xl text-white text-lg font-bold shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3" style="background: linear-gradient(135deg, ${pkg.color} 0%, ${pkg.color}dd 100%); box-shadow: 0 12px 40px ${pkg.color}40">
+          Pokračovat k shrnutí
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </button>
+      `;
+    }
+
+    function setFrequency(freq) {
+      flowState.frequency = freq;
+      selectPackage(flowState.selectedPackage); // Re-render
+    }
+
+    function toggleMarkers() {
+      const list = document.getElementById('markers-list');
+      const arrow = document.getElementById('markers-arrow');
+      if (list.classList.contains('hidden')) {
+        list.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        list.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // ============================================
+    // STEP 3: SUMMARY
+    // ============================================
+
+    function updateSummary() {
+      const pkg = packages[flowState.selectedPackage];
+      const testsPerYear = flowState.selectedPackage === 'dohled' ? 4 : 2;
+
+      // Icon
+      document.getElementById('summary-icon').style.background = pkg.color;
+
+      // Text
+      document.getElementById('summary-text').innerHTML = `Balíček <strong style="color: ${pkg.color}">${pkg.name}</strong> je ideální pro vaši situaci.`;
+
+      // Price
+      const price = flowState.frequency === 'year' ? pkg.yearPrice : pkg.price;
+      document.getElementById('summary-price').textContent = price.toLocaleString('cs-CZ') + ' Kč';
+
+      // Monthly
+      if (flowState.frequency === 'year') {
+        document.getElementById('summary-monthly').textContent = '= ' + Math.round(pkg.yearPrice / 12).toLocaleString('cs-CZ') + ' Kč měsíčně';
+      } else {
+        document.getElementById('summary-monthly').textContent = 'jednorázová platba';
+      }
+
+      // Features
+      const features = [
+        { icon: '🧪', text: pkg.markers.length + ' biomarkerů' },
+        { icon: '📅', text: pkg.frequency },
+        ...pkg.output.map(o => ({ icon: '✓', text: o }))
+      ];
+
+      document.getElementById('summary-features').innerHTML = features.map(f => `
+        <div class="flex items-center gap-3 p-3 bg-sand rounded-xl">
+          <span class="text-lg">${f.icon}</span>
+          <span class="text-navy-800/80">${f.text}</span>
+        </div>
+      `).join('');
+    }
+
+    // Reset flow when navigating away
+    function resetFlow() {
+      flowState = { step: 1, selectedPersona: null, selectedPackage: null, frequency: 'year' };
+      goToFlowStep(1);
+    }
+  </script>
+</body>
+</html>
