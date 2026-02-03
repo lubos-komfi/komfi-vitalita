@@ -40,7 +40,7 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-surface transition-colors duration-300 font-sans text-surface-on">
-      <nav className="sticky top-0 z-50 bg-surface/95 backdrop-blur-sm border-b border-surface-outline-variant/20">
+      <nav className="z-50 bg-surface/95 backdrop-blur-sm border-b border-surface-outline-variant/20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center text-primary-on-container">

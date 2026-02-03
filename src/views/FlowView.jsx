@@ -295,9 +295,9 @@ export const FlowView = () => {
                 return (
                     <div
                         onClick={() => onToggleExpansion(area.id)}
-                        className={`w-full md:w-[calc(50%-0.5rem)] rounded-2xl border transition-all overflow-hidden cursor-pointer ${isExpanded
-                            ? 'border-primary bg-primary-container/20'
-                            : 'border-surface-outline-variant bg-surface-container-low hover:bg-surface-container-high'}`}
+                        className={`w-full rounded-2xl transition-all overflow-hidden cursor-pointer ${isExpanded
+                            ? 'ring-2 ring-primary bg-primary-container/20'
+                            : 'bg-surface-container-low hover:bg-surface-container-high'}`}
                     >
                         <div className="p-6">
                             <div className="flex items-start gap-4">
@@ -349,7 +349,7 @@ export const FlowView = () => {
             const hasBaseContent = area.baseMarkers || area.tests;
 
             return (
-                <div className={`w-full md:w-[calc(50%-0.5rem)] rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
+                <div className={`w-full rounded-2xl transition-all overflow-hidden ${isExpanded ? 'ring-2 ring-primary bg-primary-container/20' : 'bg-surface-container-low'}`}>
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
@@ -503,27 +503,29 @@ export const FlowView = () => {
         ];
 
         const StepProgress = () => (
-            <div className="flex items-center justify-center gap-2 mb-8">
-                {stepConfig.map((s, i) => (
-                    <React.Fragment key={s.step}>
-                        <button
-                            onClick={() => internalStep >= s.step && setStep(s.step)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${internalStep === s.step
-                                ? 'bg-primary text-primary-on font-bold'
-                                : internalStep > s.step
-                                    ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
-                                    : 'bg-surface-container-high text-surface-on-variant'
-                                }`}
-                            disabled={internalStep < s.step}
-                        >
-                            <Icon name={internalStep > s.step ? 'check_circle' : s.icon} size={18} className={internalStep === s.step ? '' : s.color} />
-                            <span className="text-sm">{s.label}</span>
-                        </button>
-                        {i < stepConfig.length - 1 && (
-                            <Icon name="chevron_right" size={20} className="text-surface-on-variant" />
-                        )}
-                    </React.Fragment>
-                ))}
+            <div className="sticky top-0 z-40 bg-surface/95 backdrop-blur-sm py-4 -mx-4 px-4 mb-8">
+                <div className="flex items-center justify-center gap-2">
+                    {stepConfig.map((s, i) => (
+                        <React.Fragment key={s.step}>
+                            <button
+                                onClick={() => internalStep >= s.step && setStep(s.step)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${internalStep === s.step
+                                    ? 'bg-primary text-primary-on font-bold ring-2 ring-primary ring-offset-2 ring-offset-surface'
+                                    : internalStep > s.step
+                                        ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
+                                        : 'bg-surface-container-high text-surface-on-variant'
+                                    }`}
+                                disabled={internalStep < s.step}
+                            >
+                                <Icon name={internalStep > s.step ? 'check_circle' : s.icon} size={18} className={internalStep === s.step ? '' : s.color} />
+                                <span className="text-sm">{s.label}</span>
+                            </button>
+                            {i < stepConfig.length - 1 && (
+                                <Icon name="chevron_right" size={20} className="text-surface-on-variant" />
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
             </div>
         );
 
@@ -549,7 +551,7 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
                         {BLOOD_AREAS.map(area => {
                             if (area.genderFilter && area.genderFilter !== client.gender) return null;
                             return (
@@ -600,7 +602,7 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
                         {BODY_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
@@ -649,7 +651,7 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
                         {HEAD_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
@@ -770,16 +772,6 @@ export const FlowView = () => {
                         <div className="lg:col-span-1">
                             <div className="sticky top-24 p-8 rounded-3xl bg-surface-container-low border border-surface-outline-variant shadow-xl">
                                 <h3 className="font-display text-2xl mb-6 text-surface-on">Váš balíček</h3>
-
-                                {/* Frequency selector */}
-                                <div className="flex p-1 rounded-xl bg-surface-container-high mb-6">
-                                    {FREQUENCIES.map(f => (
-                                        <button key={f.id} onClick={() => setFrequency(f)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 ${frequency.id === f.id ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>
-                                            <span>{f.label}</span>
-                                            {f.discount > 0 && <span className="text-[9px] px-1.5 rounded-full bg-tertiary-container text-tertiary-on-container">-{Math.round(f.discount * 100)}%</span>}
-                                        </button>
-                                    ))}
-                                </div>
 
                                 {/* Sections summary */}
                                 <div className="space-y-4 mb-6 pb-6 border-b border-surface-outline-variant">
@@ -924,6 +916,16 @@ export const FlowView = () => {
                                             <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Frequency selector */}
+                                <div className="flex p-1 rounded-xl bg-surface-container-high mb-6">
+                                    {FREQUENCIES.map(f => (
+                                        <button key={f.id} onClick={() => setFrequency(f)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 ${frequency.id === f.id ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>
+                                            <span>{f.label}</span>
+                                            {f.discount > 0 && <span className="text-[9px] px-1.5 rounded-full bg-tertiary-container text-tertiary-on-container">-{Math.round(f.discount * 100)}%</span>}
+                                        </button>
+                                    ))}
                                 </div>
 
                                 {/* Total */}
