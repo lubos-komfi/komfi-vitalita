@@ -287,17 +287,75 @@ export const FlowView = () => {
             const expansionCount = area.expansion?.markers?.length || area.expansion?.tests?.length || 0;
             const totalCount = baseCount + (isExpanded ? expansionCount : 0);
 
+            // Check if this is a toggle-only card (no base content, only expansion)
+            const isToggleOnly = !area.baseMarkers && !area.tests && area.expansion;
+
+            // Toggle-only card layout - simple clickable card
+            if (isToggleOnly) {
+                return (
+                    <div
+                        onClick={() => onToggleExpansion(area.id)}
+                        className={`rounded-2xl border transition-all overflow-hidden cursor-pointer ${isExpanded
+                            ? 'border-primary bg-primary-container/20'
+                            : 'border-surface-outline-variant bg-surface-container-low hover:bg-surface-container-high'}`}
+                    >
+                        <div className="p-6">
+                            <div className="flex items-start gap-4">
+                                {/* Checkbox */}
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${isExpanded ? 'bg-primary text-primary-on' : 'border-2 border-surface-outline'}`}>
+                                    {isExpanded && <Icon name="check" size={18} />}
+                                </div>
+                                {/* Icon */}
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${isExpanded ? 'bg-primary-container' : 'bg-surface-container-high'}`}>
+                                    <Icon name={area.icon} size={32} className={isExpanded ? 'text-primary' : (area.color || 'text-surface-on-variant')} />
+                                </div>
+                                {/* Content */}
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                        <h4 className={`font-bold text-2xl ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>{area.name}</h4>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
+                                            {expansionCount} {expansionCount === 1 ? 'test' : expansionCount >= 2 && expansionCount <= 4 ? 'testy' : 'testů'}
+                                        </span>
+                                    </div>
+                                    <p className="text-surface-on-variant text-sm leading-relaxed">
+                                        {area.baseDescription}
+                                    </p>
+                                    {/* Tests included */}
+                                    {isExpanded && area.expansion?.tests && (
+                                        <div className="mt-3 space-y-1">
+                                            {area.expansion.tests.map(testId => (
+                                                <div key={testId} className="flex items-center gap-2 text-xs text-primary">
+                                                    <Icon name="check_circle" size={14} />
+                                                    <span>{testId === 'sppb' ? 'SPPB (rovnováha, chůze)' : testId === 'chairstand' ? 'Chair-Stand test' : testId === 'ekg' ? 'EKG' : testId === 'minicog' ? 'Mini-Cog test' : testId === 'audio' ? 'Audiometrie' : testId}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Price */}
+                                {expansionPrice > 0 && (
+                                    <div className={`text-lg font-bold ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
+                                        {expansionPrice} Kč
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Standard card layout (with base content + optional expansion)
             return (
                 <div className={`rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${area.included ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
-                                <Icon name={area.icon} size={24} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
+                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${area.included ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
+                                <Icon name={area.icon} size={32} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
                             </div>
                             <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <h4 className="font-bold text-lg text-surface-on">{area.name}</h4>
+                                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                    <h4 className="font-bold text-2xl text-surface-on">{area.name}</h4>
                                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
                                         {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
                                     </span>
@@ -353,7 +411,7 @@ export const FlowView = () => {
                         )}
                     </div>
 
-                    {/* Expansion Toggle */}
+                    {/* Expansion Toggle - only for cards with base content */}
                     {area.expansion && (
                         <div
                             onClick={() => onToggleExpansion(area.id)}
@@ -462,10 +520,10 @@ export const FlowView = () => {
 
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-4 mb-4">
-                            <div className="w-20 h-20 rounded-3xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                                <Icon name="bloodtype" size={40} className="text-red-500" />
+                            <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <Icon name="bloodtype" size={32} className="text-red-500" />
                             </div>
-                            <h2 className="text-5xl font-display text-surface-on">Krevní testy</h2>
+                            <h2 className="text-3xl font-display text-surface-on">Krevní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Základní i rozšířené krevní markery odhalující stav vašeho zdraví. Každou sekci můžete rozšířit o detailnější vyšetření.
@@ -513,10 +571,10 @@ export const FlowView = () => {
 
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-4 mb-4">
-                            <div className="w-20 h-20 rounded-3xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                                <Icon name="accessibility_new" size={40} className="text-teal-500" />
+                            <div className="w-16 h-16 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                                <Icon name="accessibility_new" size={32} className="text-teal-500" />
                             </div>
-                            <h2 className="text-5xl font-display text-surface-on">Fyzické testy</h2>
+                            <h2 className="text-3xl font-display text-surface-on">Fyzické testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Měření tělesných funkcí a fyzické kondice. Základní měření jsou v ceně, rozšíření jsou volitelná.
@@ -562,10 +620,10 @@ export const FlowView = () => {
 
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-4 mb-4">
-                            <div className="w-20 h-20 rounded-3xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                                <Icon name="psychology" size={40} className="text-violet-500" />
+                            <div className="w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                <Icon name="psychology" size={32} className="text-violet-500" />
                             </div>
-                            <h2 className="text-5xl font-display text-surface-on">Kognitivní testy</h2>
+                            <h2 className="text-3xl font-display text-surface-on">Kognitivní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Volitelné testy paměti, myšlení a smyslů. Tyto testy nejsou v základu zahrnuty – přidejte je, pokud máte zájem.
