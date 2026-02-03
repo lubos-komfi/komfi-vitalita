@@ -269,9 +269,22 @@ export const FlowView = () => {
 
     // Step 3: Area-based Order Configurator
     if (internalStep === 3) {
-        // Health Area Card Component
-        const AreaCard = ({ area, isExpanded, onToggleExpansion, priceOverride }) => {
+        // State for showing marker details
+        const [showDetails, setShowDetails] = useState({});
+        const toggleDetails = (areaId) => setShowDetails(prev => ({ ...prev, [areaId]: !prev[areaId] }));
+
+        // Count tests helper
+        const countTests = (area) => {
+            const baseCount = (area.baseMarkers?.length || 0) + (area.tests?.length || 0);
+            return baseCount;
+        };
+
+        // Health Area Card Component with expandable marker details
+        const AreaCard = ({ area, isExpanded, onToggleExpansion, priceOverride, showMarkerDetails, onToggleDetails }) => {
             const expansionPrice = priceOverride || (area.expansion?.markers?.reduce((sum, m) => sum + (LAB_COSTS[m]?.price || 0), 0));
+            const baseCount = countTests(area);
+            const expansionCount = area.expansion?.markers?.length || area.expansion?.tests?.length || 0;
+            const totalCount = baseCount + (isExpanded ? expansionCount : 0);
 
             return (
                 <div className={`rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
@@ -282,8 +295,12 @@ export const FlowView = () => {
                                 <Icon name={area.icon} size={24} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
                             </div>
                             <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <h4 className="font-bold text-lg text-surface-on">{area.name}</h4>
+                                    {/* Test count chip */}
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
+                                        {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
+                                    </span>
                                     {area.included && (
                                         <span className="text-xs px-2 py-0.5 rounded-full bg-tertiary-container text-tertiary font-medium">V ceně</span>
                                     )}
@@ -293,6 +310,50 @@ export const FlowView = () => {
                                 </p>
                             </div>
                         </div>
+
+                        {/* Show details toggle - for base markers */}
+                        {(area.baseMarkers || area.tests) && (
+                            <button
+                                onClick={() => onToggleDetails(area.id)}
+                                className="mt-4 flex items-center gap-2 text-xs text-surface-on-variant hover:text-primary transition-colors"
+                            >
+                                <Icon name={showMarkerDetails ? 'expand_less' : 'expand_more'} size={16} />
+                                <span>{showMarkerDetails ? 'Skrýt měřené parametry' : 'Zobrazit měřené parametry'}</span>
+                            </button>
+                        )}
+
+                        {/* Marker details list */}
+                        {showMarkerDetails && (
+                            <div className="mt-3 pl-4 border-l-2 border-surface-outline-variant space-y-1">
+                                {/* Base markers for blood */}
+                                {area.baseMarkers?.map(markerId => (
+                                    <div key={markerId} className="flex items-center gap-2 text-xs text-surface-on-variant">
+                                        <Icon name="check_circle" size={14} className="text-tertiary" />
+                                        <span>{LAB_COSTS[markerId]?.name || markerId}</span>
+                                    </div>
+                                ))}
+                                {/* Tests for body/head */}
+                                {area.tests?.map(testId => (
+                                    <div key={testId} className="flex items-center gap-2 text-xs text-surface-on-variant">
+                                        <Icon name="check_circle" size={14} className="text-tertiary" />
+                                        <span>{testId === 'inbody' ? 'InBody měření' : testId === 'grip' ? 'Síla stisku' : testId === 'bp' ? 'Krevní tlak' : testId}</span>
+                                    </div>
+                                ))}
+                                {/* Expansion markers if expanded */}
+                                {isExpanded && area.expansion?.markers?.map(markerId => (
+                                    <div key={markerId} className="flex items-center gap-2 text-xs text-primary">
+                                        <Icon name="add_circle" size={14} />
+                                        <span>{LAB_COSTS[markerId]?.name || markerId}</span>
+                                    </div>
+                                ))}
+                                {isExpanded && area.expansion?.tests?.map(testId => (
+                                    <div key={testId} className="flex items-center gap-2 text-xs text-primary">
+                                        <Icon name="add_circle" size={14} />
+                                        <span>{testId === 'sppb' ? 'SPPB (rovnováha, chůze)' : testId === 'chairstand' ? 'Chair-Stand test' : testId === 'ekg' ? 'EKG' : testId === 'minicog' ? 'Mini-Cog test' : testId === 'audio' ? 'Audiometrie' : testId}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Expansion Toggle */}
@@ -309,8 +370,13 @@ export const FlowView = () => {
                                         {isExpanded && <Icon name="check" size={16} />}
                                     </div>
                                     <div>
-                                        <div className={`font-bold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
-                                            {area.expansion.name}
+                                        <div className="flex items-center gap-2">
+                                            <span className={`font-bold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
+                                                {area.expansion.name}
+                                            </span>
+                                            <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container-high text-surface-on-variant">
+                                                +{expansionCount} {expansionCount === 1 ? 'test' : 'testy'}
+                                            </span>
                                         </div>
                                         <div className="text-xs text-surface-on-variant mt-0.5">
                                             {area.expansion.description}
@@ -329,6 +395,31 @@ export const FlowView = () => {
             );
         };
 
+        // Count total tests in each category
+        const bloodTestCount = BLOOD_AREAS.reduce((sum, area) => {
+            if (area.genderFilter && area.genderFilter !== client.gender) return sum;
+            let count = area.baseMarkers?.length || 0;
+            if (expandedBloodAreas.includes(area.id) && area.expansion) {
+                count += area.expansion.markers?.length || 0;
+            }
+            return sum + count;
+        }, 0);
+
+        const bodyTestCount = BODY_AREAS.reduce((sum, area) => {
+            let count = area.tests?.length || 0;
+            if (expandedBodyAreas.includes(area.id) && area.expansion) {
+                count += area.expansion.tests?.length || 0;
+            }
+            return sum + count;
+        }, 0);
+
+        const headTestCount = HEAD_AREAS.reduce((sum, area) => {
+            if (expandedHeadAreas.includes(area.id)) {
+                return sum + (area.expansion?.tests?.length || 0);
+            }
+            return sum;
+        }, 0);
+
         return (
             <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up">
                 <button onClick={() => setStep(path === 'care' ? 2.5 : 2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
@@ -343,7 +434,7 @@ export const FlowView = () => {
                             <p className="text-surface-on-variant text-lg">Vyberte oblasti zdraví, které chcete prověřit. Každou oblast můžete rozšířit o detailnější vyšetření.</p>
                         </div>
 
-                        {/* Tabs */}
+                        {/* Tabs with test counts */}
                         <div className="flex p-1 rounded-2xl bg-surface-container-high">
                             {tabs.map(tab => (
                                 <button
@@ -354,6 +445,10 @@ export const FlowView = () => {
                                 >
                                     <Icon name={tab.icon} className={activeTab === tab.id ? tab.color : ''} />
                                     <span>{tab.label}</span>
+                                    {/* Test count badge */}
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-primary-container text-primary' : 'bg-surface-container text-surface-on-variant'}`}>
+                                        {tab.id === 'blood' ? bloodTestCount : tab.id === 'body' ? bodyTestCount : headTestCount}
+                                    </span>
                                 </button>
                             ))}
                         </div>
@@ -371,6 +466,8 @@ export const FlowView = () => {
                                                 area={area}
                                                 isExpanded={expandedBloodAreas.includes(area.id)}
                                                 onToggleExpansion={toggleBloodExpansion}
+                                                showMarkerDetails={showDetails[area.id]}
+                                                onToggleDetails={toggleDetails}
                                             />
                                         );
                                     })}
@@ -387,6 +484,8 @@ export const FlowView = () => {
                                             isExpanded={expandedBodyAreas.includes(area.id)}
                                             onToggleExpansion={toggleBodyExpansion}
                                             priceOverride={area.price}
+                                            showMarkerDetails={showDetails[area.id]}
+                                            onToggleDetails={toggleDetails}
                                         />
                                     ))}
                                 </>
@@ -402,6 +501,8 @@ export const FlowView = () => {
                                             isExpanded={expandedHeadAreas.includes(area.id)}
                                             onToggleExpansion={toggleHeadExpansion}
                                             priceOverride={area.price}
+                                            showMarkerDetails={showDetails[area.id]}
+                                            onToggleDetails={toggleDetails}
                                         />
                                     ))}
                                 </>
@@ -424,36 +525,75 @@ export const FlowView = () => {
                                 ))}
                             </div>
 
+                            {/* Sections summary - always show Krev + Tělo */}
+                            <div className="space-y-4 mb-6 pb-6 border-b border-surface-outline-variant">
+                                {/* Krev - always shown */}
+                                <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Icon name="bloodtype" size={20} className="text-red-500" />
+                                            <span className="font-bold text-surface-on">Krev</span>
+                                        </div>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                            {bloodTestCount} testů
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-surface-on-variant">{calculateBloodPrice()} Kč</div>
+                                    {expandedBloodAreas.length > 0 && (
+                                        <div className="mt-2 text-xs text-primary">
+                                            +{expandedBloodAreas.length} rozšíření
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Tělo - always shown */}
+                                <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Icon name="accessibility_new" size={20} className="text-teal-500" />
+                                            <span className="font-bold text-surface-on">Tělo</span>
+                                        </div>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
+                                            {bodyTestCount} testů
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-surface-on-variant">
+                                        {calculateBodyPrice() > 0 ? `+${calculateBodyPrice()} Kč` : 'V ceně služby'}
+                                    </div>
+                                    {expandedBodyAreas.length > 0 && (
+                                        <div className="mt-2 text-xs text-primary">
+                                            +{expandedBodyAreas.length} rozšíření
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Hlava - shown only if any expansion selected */}
+                                {expandedHeadAreas.length > 0 && (
+                                    <div className="p-4 rounded-xl bg-primary-container/30 border border-primary/30">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="psychology" size={20} className="text-violet-500" />
+                                                <span className="font-bold text-surface-on">Hlava</span>
+                                            </div>
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
+                                                {headTestCount} testů
+                                            </span>
+                                        </div>
+                                        <div className="text-sm text-primary font-medium">+{calculateHeadPrice()} Kč</div>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Price breakdown */}
-                            <div className="space-y-3 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
+                            <div className="space-y-2 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-surface-on-variant flex items-center gap-2">
-                                        <Icon name="home_health" size={16} /> Služba
-                                    </span>
+                                    <span className="text-surface-on-variant">Služba (sestra, odběr)</span>
                                     <span className="font-bold text-surface-on">{SERVICE_FEE} Kč</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-surface-on-variant flex items-center gap-2">
-                                        <Icon name="bloodtype" size={16} className="text-red-500" /> Krev
-                                    </span>
-                                    <span className="font-bold text-surface-on">{calculateBloodPrice()} Kč</span>
+                                    <span className="text-surface-on-variant">Laboratorní testy</span>
+                                    <span className="font-bold text-surface-on">{calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice()} Kč</span>
                                 </div>
-                                {calculateBodyPrice() > 0 && (
-                                    <div className="flex justify-between text-primary">
-                                        <span className="flex items-center gap-2">
-                                            <Icon name="accessibility_new" size={16} /> Tělo
-                                        </span>
-                                        <span className="font-bold">+{calculateBodyPrice()} Kč</span>
-                                    </div>
-                                )}
-                                {calculateHeadPrice() > 0 && (
-                                    <div className="flex justify-between text-primary">
-                                        <span className="flex items-center gap-2">
-                                            <Icon name="psychology" size={16} /> Hlava
-                                        </span>
-                                        <span className="font-bold">+{calculateHeadPrice()} Kč</span>
-                                    </div>
-                                )}
                                 {frequency.discount > 0 && (
                                     <div className="flex justify-between text-tertiary">
                                         <span>Sleva za frekvenci</span>
@@ -471,24 +611,6 @@ export const FlowView = () => {
                             <button onClick={() => setStep(4)} className="w-full py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg">
                                 Objednat termín
                             </button>
-
-                            {/* Summary */}
-                            <div className="mt-6 pt-6 border-t border-surface-outline-variant">
-                                <div className="text-xs text-surface-on-variant space-y-1">
-                                    <div className="flex justify-between">
-                                        <span>Rozšíření krve:</span>
-                                        <span className="font-bold">{expandedBloodAreas.length}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Rozšíření těla:</span>
-                                        <span className="font-bold">{expandedBodyAreas.length}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Rozšíření hlavy:</span>
-                                        <span className="font-bold">{expandedHeadAreas.length}</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
