@@ -350,6 +350,12 @@ export const FlowView = () => {
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
+                            {/* Included checkbox - always checked */}
+                            {area.included && (
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-4 bg-tertiary text-tertiary-on">
+                                    <Icon name="check" size={18} />
+                                </div>
+                            )}
                             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${area.included ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
                                 <Icon name={area.icon} size={32} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
                             </div>
