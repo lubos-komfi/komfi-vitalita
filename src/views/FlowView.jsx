@@ -295,7 +295,7 @@ export const FlowView = () => {
                 return (
                     <div
                         onClick={() => onToggleExpansion(area.id)}
-                        className={`rounded-2xl border transition-all overflow-hidden cursor-pointer ${isExpanded
+                        className={`w-full md:w-[calc(50%-0.5rem)] rounded-2xl border transition-all overflow-hidden cursor-pointer ${isExpanded
                             ? 'border-primary bg-primary-container/20'
                             : 'border-surface-outline-variant bg-surface-container-low hover:bg-surface-container-high'}`}
                     >
@@ -349,7 +349,7 @@ export const FlowView = () => {
             const hasBaseContent = area.baseMarkers || area.tests;
 
             return (
-                <div className={`rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
+                <div className={`w-full md:w-[calc(50%-0.5rem)] rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
@@ -374,8 +374,8 @@ export const FlowView = () => {
                                     {/* Gender segment tag */}
                                     {area.genderFilter && (
                                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${area.genderFilter === 'female'
-                                                ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'
-                                                : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                            ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'
+                                            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                                             }`}>
                                             <Icon name={area.genderFilter === 'female' ? 'female' : 'male'} size={12} />
                                             {area.genderFilter === 'female' ? 'Pro ženy' : 'Pro muže'}
@@ -549,7 +549,7 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8">
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
                         {BLOOD_AREAS.map(area => {
                             if (area.genderFilter && area.genderFilter !== client.gender) return null;
                             return (
@@ -600,8 +600,8 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8">
-                        {BODY_AREAS.map(area => (
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        {BODY_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
                                 area={area}
@@ -649,8 +649,8 @@ export const FlowView = () => {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8">
-                        {HEAD_AREAS.map(area => (
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        {HEAD_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
                                 area={area}
@@ -827,18 +827,99 @@ export const FlowView = () => {
                                     )}
                                 </div>
 
-                                {/* Price breakdown */}
-                                <div className="space-y-2 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-surface-on-variant">Služba (sestra, odběr)</span>
-                                        <span className="font-bold text-surface-on">{SERVICE_FEE} Kč</span>
+                                {/* What's included */}
+                                <div className="space-y-3 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
+                                    <h4 className="text-xs uppercase tracking-wider text-surface-on-variant font-bold mb-3">Co je zahrnuto</h4>
+
+                                    {/* Visits */}
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
+                                            <Icon name="home_health" size={16} className="text-primary" />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-surface-on">{frequency.multiplier}× návštěvy</span>
+                                            <span className="text-surface-on-variant"> zdravotní sestry</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-surface-on-variant">Laboratorní testy</span>
-                                        <span className="font-bold text-surface-on">{calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice()} Kč</span>
+
+                                    {/* Blood draws */}
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                                            <Icon name="bloodtype" size={16} className="text-red-500" />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-surface-on">{frequency.multiplier}× Krevní odběr</span>
+                                            <span className="text-surface-on-variant"> s analýzou {bloodTestCount} biomarkerů</span>
+                                        </div>
                                     </div>
+
+                                    {/* Body composition */}
+                                    {expandedBodyAreas.includes('composition') || BODY_AREAS.find(a => a.id === 'composition')?.included ? (
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="scale" size={16} className="text-teal-500" />
+                                            </div>
+                                            <div>
+                                                <span className="font-bold text-surface-on">{frequency.multiplier}× Analýza složení těla</span>
+                                                <span className="text-surface-on-variant block text-xs">(svalová hmota, viscerální tuk)</span>
+                                            </div>
+                                        </div>
+                                    ) : null}
+
+                                    {/* Blood pressure */}
+                                    {expandedBodyAreas.includes('strength') || BODY_AREAS.find(a => a.id === 'strength')?.included ? (
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="monitor_heart" size={16} className="text-emerald-500" />
+                                            </div>
+                                            <div>
+                                                <span className="font-bold text-surface-on">{frequency.multiplier}× Měření krevního tlaku</span>
+                                            </div>
+                                        </div>
+                                    ) : null}
+
+                                    <div className="border-t border-surface-outline-variant pt-3 mt-3 space-y-3">
+                                        {/* AI interpretation */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="auto_awesome" size={16} className="text-violet-500" />
+                                            </div>
+                                            <div>
+                                                <span className="font-bold text-surface-on">AI interpretace výsledků</span>
+                                                <span className="text-surface-on-variant block text-xs">Personalizovaná doporučení</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Health tracking */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="trending_up" size={16} className="text-blue-500" />
+                                            </div>
+                                            <span className="text-surface-on">Sledování vývoje zdraví v čase</span>
+                                        </div>
+
+                                        {/* Share with doctor */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="share" size={16} className="text-amber-500" />
+                                            </div>
+                                            <span className="text-surface-on">Sdílení zprávy s lékařem</span>
+                                        </div>
+
+                                        {/* Consultation (optional) */}
+                                        <div className="flex items-start gap-3 opacity-60">
+                                            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                                                <Icon name="stethoscope" size={16} className="text-surface-on-variant" />
+                                            </div>
+                                            <div>
+                                                <span className="text-surface-on">Konzultace s lékařem</span>
+                                                <span className="text-surface-on-variant block text-xs">Volitelně za příplatek</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {frequency.discount > 0 && (
-                                        <div className="flex justify-between text-tertiary">
+                                        <div className="flex justify-between text-tertiary pt-2">
                                             <span>Sleva za frekvenci</span>
                                             <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
                                         </div>

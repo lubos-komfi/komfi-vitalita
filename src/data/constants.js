@@ -289,6 +289,7 @@ export const BODY_AREAS = [
         name: 'Srdce a rytmus',
         icon: 'ecg',
         color: 'text-red-400',
+        hidden: true, // Temporarily hidden
         baseDescription: 'Provedeme jednosvodové EKG přímo u vás doma. Odhalíme fibrilaci síní, která způsobuje mrtvice.',
         price: 350,
         expansion: {
@@ -318,6 +319,7 @@ export const HEAD_AREAS = [
         name: 'Sluch',
         icon: 'hearing',
         color: 'text-blue-400',
+        hidden: true, // Temporarily hidden
         baseDescription: 'Screening sluchu pomocí kalibrovaných sluchátek. Nedoslýchavost vede k sociální izolaci a urychluje demenci.',
         price: 250,
         expansion: {
