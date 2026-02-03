@@ -143,102 +143,205 @@ export const PROFILES_SPEC = {
 export const SERVICE_FEE = 1200;
 
 // ============================================
-// PHYSICAL TESTS (Tělo)
+// HEALTH AREAS - Human-friendly descriptions
+// Each area has: base (always included) + optional expansion
 // ============================================
-export const PHYSICAL_TESTS = [
-    { id: 'inbody', name: 'InBody měření', desc: 'Složení těla (svaly, tuk, voda)', price: 0, included: true, icon: 'scale' },
-    { id: 'grip', name: 'Grip Strength', desc: 'Síla stisku ruky', price: 0, included: true, icon: 'front_hand' },
-    { id: 'bp', name: 'Tlak & Puls', desc: 'Základní vitální znaky', price: 0, included: true, icon: 'monitor_heart' },
-    { id: 'sts30', name: '30s Sit-to-Stand', desc: 'Síla dolních končetin, riziko pádu', price: 150, icon: 'airline_seat_recline_normal' },
-    { id: 'tug', name: 'Timed Up and Go', desc: 'Dynamická rovnováha při chůzi', price: 150, icon: 'directions_walk' },
-    { id: 'gait', name: 'Rychlost chůze', desc: '6. vitální znak, prediktor zdraví', price: 100, icon: 'speed' },
-    { id: 'ekg', name: 'Jednosvodové EKG', desc: 'Detekce fibrilace síní', price: 350, icon: 'ecg' },
-];
 
-// ============================================
-// COGNITIVE TESTS (Hlava)
-// ============================================
-export const COGNITIVE_TESTS = [
-    { id: 'minicog', name: 'Mini-Cog', desc: 'Rychlý demence screening (3 min)', price: 200, icon: 'psychology' },
-    { id: 'mmse', name: 'MMSE', desc: 'Detailní kognitivní hodnocení (30 bodů)', price: 350, icon: 'quiz' },
-    { id: 'audio', name: 'Digitální audiometrie', desc: 'Screening sluchu pomocí tabletu', price: 250, icon: 'hearing' },
-    { id: 'retina', name: 'Retinální fotografie', desc: 'Sken očí pro detekci retinopatie', price: 400, icon: 'visibility' },
-];
-
-// ============================================
-// BLOOD TEST GROUPS (Krev) - organized for UI
-// ============================================
-export const BLOOD_TEST_GROUPS = [
-    {
-        id: 'base',
-        name: 'Základ',
-        desc: 'Vždy v ceně',
-        included: true,
-        tests: ['ko', 'gluk', 'moc']
-    },
+export const BLOOD_AREAS = [
     {
         id: 'cardio',
-        name: 'Srdce & Cévy',
-        desc: 'Lipidový profil a kardio markery',
+        name: 'Srdce a cévy',
         icon: 'favorite',
-        tests: ['chol', 'hdl', 'ldl', 'tri'],
-        extras: ['apob', 'homocystein']
+        color: 'text-red-500',
+        baseDescription: 'Kontrolujeme hladinu cholesterolu a tuků v krvi. Zjistíme, jestli máte cévy čisté nebo se v nich něco ukládá.',
+        baseMarkers: ['chol', 'hdl', 'ldl', 'tri'],
+        expansion: {
+            name: 'Rozšířit o detailní kardio',
+            description: 'Přidáme pokročilé markery ApoB a Homocystein, které lépe predikují riziko infarktu než samotný cholesterol.',
+            markers: ['apob', 'homocystein'],
+        }
     },
     {
         id: 'liver',
-        name: 'Játra & Slinivka',
-        desc: 'Jaterní enzymy a funkce',
+        name: 'Játra a trávení',
         icon: 'water_drop',
-        tests: ['alt', 'ast', 'ggt'],
-        extras: ['bilirubin', 'alp', 'ams']
+        color: 'text-amber-500',
+        baseDescription: 'Měříme jaterní enzymy. Ukazují, jak se játra vyrovnávají s tím, co jíte a pijete.',
+        baseMarkers: ['alt', 'ast', 'ggt'],
+        expansion: {
+            name: 'Rozšířit o kompletní játra',
+            description: 'Přidáme bilirubin a detailní testy slinivky. Důležité, pokud užíváte léky nebo pijete alkohol pravidelněji.',
+            markers: ['bilirubin', 'alp', 'ams'],
+        }
     },
     {
         id: 'kidney',
         name: 'Ledviny',
-        desc: 'Renální funkce',
         icon: 'water',
-        tests: ['krea', 'urea'],
-        extras: ['acr']
+        color: 'text-blue-500',
+        baseDescription: 'Kontrolujeme, jak dobře ledviny filtrují krev. Včasné odhalení problémů může předejít dialýze.',
+        baseMarkers: ['krea', 'urea'],
+        expansion: {
+            name: 'Rozšířit o časnou detekci',
+            description: 'Přidáme citlivý test ACR, který odhalí poškození ledvin roky předtím, než se projeví v běžných testech.',
+            markers: ['acr'],
+        }
     },
     {
         id: 'thyroid',
         name: 'Štítná žláza',
-        desc: 'Hormony štítné žlázy',
         icon: 'psychology',
-        tests: ['tsh'],
-        extras: ['ft4', 'anti_tpo'],
-        genderFilter: 'female'
+        color: 'text-purple-500',
+        baseDescription: 'Kontrolujeme hormony štítné žlázy. Ovlivňují váhu, energii, náladu i kvalitu vlasů a pokožky.',
+        baseMarkers: ['tsh'],
+        genderFilter: 'female',
+        expansion: {
+            name: 'Rozšířit o autoimunitu',
+            description: 'Přidáme fT4 a protilátky anti-TPO. Odhalíme, jestli štítnou žlázu nenapadá vlastní imunitní systém.',
+            markers: ['ft4', 'anti_tpo'],
+        }
     },
     {
-        id: 'vitamins',
-        name: 'Vitamíny & Minerály',
-        desc: 'Nutriční stav',
-        icon: 'wb_sunny',
-        tests: ['mg'],
-        extras: ['vitD', 'vitB12', 'folat', 'ferritin', 'zinek', 'ca']
+        id: 'energy',
+        name: 'Energie a vitalita',
+        icon: 'bolt',
+        color: 'text-yellow-500',
+        baseDescription: 'Kontrolujeme vitamíny a minerály klíčové pro energii. Únava často není ve vaší hlavě, ale v krvi.',
+        baseMarkers: ['mg'],
+        expansion: {
+            name: 'Rozšířit o kompletní vitamíny',
+            description: 'Přidáme D vitamin (imunita, kosti), B12 (nervy, paměť), folát a železo. Kompletní obraz vaší vitality.',
+            markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
+        }
     },
     {
         id: 'inflammation',
-        name: 'Záněty & Imunita',
-        desc: 'Zánětlivé markery',
-        icon: 'bloodtype',
-        tests: [],
-        extras: ['crp', 'bilkovina']
+        name: 'Záněty v těle',
+        icon: 'local_fire_department',
+        color: 'text-orange-500',
+        baseDescription: 'Měříme CRP - univerzální ukazatel zánětu. Chronický zánět urychluje stárnutí a způsobuje nemoci.',
+        baseMarkers: ['crp'],
+        expansion: {
+            name: 'Rozšířit o imunitní profil',
+            description: 'Přidáme detailní krevní obraz a bílkoviny. Vidíme, jak silný je váš imunitní systém.',
+            markers: ['ko', 'bilkovina'],
+        }
     },
     {
         id: 'diabetes',
-        name: 'Cukrovka',
-        desc: 'Diabetické markery',
+        name: 'Cukr a metabolismus',
         icon: 'cookie',
-        tests: [],
-        extras: ['hba1c', 'cpeptid']
+        color: 'text-pink-500',
+        baseDescription: 'Měříme hladinu cukru v krvi. Včasné odhalení prediabetu může zabránit rozvoji cukrovky.',
+        baseMarkers: ['gluk'],
+        expansion: {
+            name: 'Rozšířit o dlouhodobý cukr',
+            description: 'Přidáme HbA1c (průměr cukru za 3 měsíce) a C-peptid (funkce slinivky). Kompletní obraz metabolismu.',
+            markers: ['hba1c', 'cpeptid'],
+        }
     },
     {
         id: 'prostate',
         name: 'Prostata',
-        desc: 'Pouze muži',
         icon: 'male',
-        tests: ['psa'],
-        genderFilter: 'male'
+        color: 'text-indigo-500',
+        baseDescription: 'Kontrolujeme PSA - marker zdraví prostaty. Důležité pro muže nad 50 let jako prevence rakoviny.',
+        baseMarkers: ['psa'],
+        genderFilter: 'male',
+        expansion: null
     }
 ];
+
+export const BODY_AREAS = [
+    {
+        id: 'composition',
+        name: 'Složení těla',
+        icon: 'scale',
+        color: 'text-teal-500',
+        included: true,
+        baseDescription: 'Měříme přesné složení těla pomocí InBody - kolik máte svalů, tuku a vody. Váha sama nic neříká.',
+        tests: ['inbody'],
+    },
+    {
+        id: 'strength',
+        name: 'Síla a kondice',
+        icon: 'fitness_center',
+        color: 'text-emerald-500',
+        included: true,
+        baseDescription: 'Měříme sílu stisku ruky a základní krevní tlak. Síla stisku překvapivě predikuje délku života.',
+        tests: ['grip', 'bp'],
+    },
+    {
+        id: 'mobility',
+        name: 'Fyzická zdatnost',
+        icon: 'accessibility_new',
+        color: 'text-cyan-500',
+        baseDescription: 'Testujeme sílu nohou a celkovou fyzickou zdatnost. Klíčové pro predikci soběstačnosti u seniorů.',
+        price: 350,
+        expansion: {
+            name: 'Přidat SPPB testy',
+            description: 'Provedeme Short Physical Performance Battery - standardizovanou sadu testů: rovnováha, rychlost chůze, vstávání ze židle. Používá se celosvětově.',
+            tests: ['sppb', 'chairstand'],
+        }
+    },
+    {
+        id: 'heart',
+        name: 'Srdce a rytmus',
+        icon: 'ecg',
+        color: 'text-red-400',
+        baseDescription: 'Provedeme jednosvodové EKG přímo u vás doma. Odhalíme fibrilaci síní, která způsobuje mrtvice.',
+        price: 350,
+        expansion: {
+            name: 'Přidat EKG vyšetření',
+            description: 'Pomocí chytrého zařízení změříme srdeční rytmus. Fibrilace síní často nemá žádné příznaky, ale zvyšuje riziko mrtvice 5×.',
+            tests: ['ekg'],
+        }
+    }
+];
+
+export const HEAD_AREAS = [
+    {
+        id: 'memory',
+        name: 'Paměť a myšlení',
+        icon: 'psychology',
+        color: 'text-violet-500',
+        baseDescription: 'Rychlý screening kognitivních funkcí pomocí testu hodin. Odhalíme změny paměti dříve, než si jich všimne okolí.',
+        price: 200,
+        expansion: {
+            name: 'Přidat Mini-Cog test',
+            description: 'Provedeme Mini-Cog test - nakreslíte hodiny a vzpomenete si na 3 slova. Trvá 3 minuty a má vysokou citlivost pro časnou demenci.',
+            tests: ['minicog'],
+        }
+    },
+    {
+        id: 'hearing',
+        name: 'Sluch',
+        icon: 'hearing',
+        color: 'text-blue-400',
+        baseDescription: 'Screening sluchu pomocí kalibrovaných sluchátek. Nedoslýchavost vede k sociální izolaci a urychluje demenci.',
+        price: 250,
+        expansion: {
+            name: 'Přidat test sluchu',
+            description: 'Pomocí tabletu a sluchátek otestujeme sluch na různých frekvencích. Odhalíme i mírné ztráty, které si člověk neuvědomuje.',
+            tests: ['audio'],
+        }
+    }
+];
+
+// Keep old exports for backwards compatibility
+export const PHYSICAL_TESTS = [
+    { id: 'inbody', name: 'InBody měření', price: 0, included: true },
+    { id: 'grip', name: 'Grip Strength', price: 0, included: true },
+    { id: 'bp', name: 'Tlak & Puls', price: 0, included: true },
+    { id: 'sppb', name: 'SPPB', price: 200 },
+    { id: 'chairstand', name: 'Chair-Stand test', price: 150 },
+    { id: 'ekg', name: 'EKG', price: 350 },
+];
+
+export const COGNITIVE_TESTS = [
+    { id: 'minicog', name: 'Mini-Cog', price: 200 },
+    { id: 'audio', name: 'Audiometrie', price: 250 },
+];
+
+// Deprecated - kept for backwards compatibility
+export const BLOOD_TEST_GROUPS = BLOOD_AREAS;

@@ -6,9 +6,9 @@ import {
     HEALTH_CATEGORIES,
     FREQUENCIES,
     SERVICE_FEE,
-    PHYSICAL_TESTS,
-    COGNITIVE_TESTS,
-    BLOOD_TEST_GROUPS
+    BLOOD_AREAS,
+    BODY_AREAS,
+    HEAD_AREAS
 } from '../data/constants';
 
 export const FlowView = () => {
@@ -28,13 +28,12 @@ export const FlowView = () => {
     const [path, setPath] = useState(null);
     const [frequency, setFrequency] = useState(FREQUENCIES[1]);
 
-    // New state for tabbed order builder
+    // State for area expansions (stores area IDs that are expanded)
     const [activeTab, setActiveTab] = useState('blood');
-    const [selectedBloodTests, setSelectedBloodTests] = useState([]);
-    const [selectedPhysicalTests, setSelectedPhysicalTests] = useState([]);
-    const [selectedCognitiveTests, setSelectedCognitiveTests] = useState([]);
-    const [recommendedTests, setRecommendedTests] = useState([]); // From questionnaire
-    const [tempSelectedModules, setTempSelectedModules] = useState([]); // For questionnaire step
+    const [expandedBloodAreas, setExpandedBloodAreas] = useState([]);
+    const [expandedBodyAreas, setExpandedBodyAreas] = useState([]);
+    const [expandedHeadAreas, setExpandedHeadAreas] = useState([]);
+    const [tempSelectedModules, setTempSelectedModules] = useState([]);
 
     useEffect(() => {
         setInternalStep(getStepFromPath());
@@ -44,95 +43,101 @@ export const FlowView = () => {
         navigate(`/flow/${newStep}`);
     };
 
-    // Toggle functions
-    const toggleBloodTest = (testId) => {
-        if (selectedBloodTests.includes(testId)) {
-            setSelectedBloodTests(selectedBloodTests.filter(t => t !== testId));
+    // Toggle expansion for areas
+    const toggleBloodExpansion = (areaId) => {
+        if (expandedBloodAreas.includes(areaId)) {
+            setExpandedBloodAreas(expandedBloodAreas.filter(id => id !== areaId));
         } else {
-            setSelectedBloodTests([...selectedBloodTests, testId]);
+            setExpandedBloodAreas([...expandedBloodAreas, areaId]);
         }
     };
 
-    const togglePhysicalTest = (testId) => {
-        const test = PHYSICAL_TESTS.find(t => t.id === testId);
-        if (test?.included) return; // Can't toggle included tests
-        if (selectedPhysicalTests.includes(testId)) {
-            setSelectedPhysicalTests(selectedPhysicalTests.filter(t => t !== testId));
+    const toggleBodyExpansion = (areaId) => {
+        if (expandedBodyAreas.includes(areaId)) {
+            setExpandedBodyAreas(expandedBodyAreas.filter(id => id !== areaId));
         } else {
-            setSelectedPhysicalTests([...selectedPhysicalTests, testId]);
+            setExpandedBodyAreas([...expandedBodyAreas, areaId]);
         }
     };
 
-    const toggleCognitiveTest = (testId) => {
-        if (selectedCognitiveTests.includes(testId)) {
-            setSelectedCognitiveTests(selectedCognitiveTests.filter(t => t !== testId));
+    const toggleHeadExpansion = (areaId) => {
+        if (expandedHeadAreas.includes(areaId)) {
+            setExpandedHeadAreas(expandedHeadAreas.filter(id => id !== areaId));
         } else {
-            setSelectedCognitiveTests([...selectedCognitiveTests, testId]);
+            setExpandedHeadAreas([...expandedHeadAreas, areaId]);
+        }
+    };
+
+    // Toggle function for questionnaire
+    const toggleModule = (id) => {
+        if (tempSelectedModules.includes(id)) {
+            setTempSelectedModules(tempSelectedModules.filter(m => m !== id));
+        } else {
+            setTempSelectedModules([...tempSelectedModules, id]);
         }
     };
 
     // Calculate prices
     const calculateBloodPrice = () => {
         let total = 0;
-        // Base tests always included
-        BLOOD_TEST_GROUPS.find(g => g.id === 'base')?.tests.forEach(testId => {
-            if (LAB_COSTS[testId]) total += LAB_COSTS[testId].price;
-        });
-        // Selected extras
-        selectedBloodTests.forEach(testId => {
-            if (LAB_COSTS[testId]) total += LAB_COSTS[testId].price;
+        BLOOD_AREAS.forEach(area => {
+            if (area.genderFilter && area.genderFilter !== client.gender) return;
+            // Base markers
+            area.baseMarkers?.forEach(markerId => {
+                if (LAB_COSTS[markerId]) total += LAB_COSTS[markerId].price;
+            });
+            // Expansion markers
+            if (expandedBloodAreas.includes(area.id) && area.expansion) {
+                area.expansion.markers?.forEach(markerId => {
+                    if (LAB_COSTS[markerId]) total += LAB_COSTS[markerId].price;
+                });
+            }
         });
         return total;
     };
 
-    const calculatePhysicalPrice = () => {
-        return selectedPhysicalTests.reduce((sum, testId) => {
-            const test = PHYSICAL_TESTS.find(t => t.id === testId);
-            return sum + (test?.price || 0);
-        }, 0);
+    const calculateBodyPrice = () => {
+        let total = 0;
+        BODY_AREAS.forEach(area => {
+            if (expandedBodyAreas.includes(area.id) && area.price) {
+                total += area.price;
+            }
+        });
+        return total;
     };
 
-    const calculateCognitivePrice = () => {
-        return selectedCognitiveTests.reduce((sum, testId) => {
-            const test = COGNITIVE_TESTS.find(t => t.id === testId);
-            return sum + (test?.price || 0);
-        }, 0);
+    const calculateHeadPrice = () => {
+        let total = 0;
+        HEAD_AREAS.forEach(area => {
+            if (expandedHeadAreas.includes(area.id) && area.price) {
+                total += area.price;
+            }
+        });
+        return total;
     };
 
     const calculateTotal = () => {
-        const base = SERVICE_FEE + calculateBloodPrice() + calculatePhysicalPrice() + calculateCognitivePrice();
+        const base = SERVICE_FEE + calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice();
         return Math.round(base * frequency.multiplier * (1 - frequency.discount));
     };
 
-    // Preselect tests based on questionnaire answers
+    // Preselect based on questionnaire
     const processQuestionnaireAnswers = (selectedModuleIds) => {
-        const recommended = [];
-        // Map questionnaire to blood tests
         if (selectedModuleIds.includes('cardio')) {
-            recommended.push('apob', 'homocystein');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'apob', 'homocystein'])]);
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'cardio'])]);
         }
         if (selectedModuleIds.includes('diabetes')) {
-            recommended.push('hba1c', 'cpeptid');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'hba1c', 'cpeptid'])]);
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'diabetes'])]);
         }
         if (selectedModuleIds.includes('liver')) {
-            recommended.push('bilirubin', 'alp');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'bilirubin', 'alp'])]);
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'liver'])]);
         }
         if (selectedModuleIds.includes('vitamins')) {
-            recommended.push('vitD', 'vitB12', 'folat', 'zinek');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'vitD', 'vitB12', 'folat', 'zinek'])]);
-        }
-        if (selectedModuleIds.includes('iron')) {
-            recommended.push('ferritin');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'ferritin'])]);
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'energy'])]);
         }
         if (selectedModuleIds.includes('thyroid')) {
-            recommended.push('ft4', 'anti_tpo');
-            setSelectedBloodTests(prev => [...new Set([...prev, 'ft4', 'anti_tpo'])]);
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'thyroid'])]);
         }
-        setRecommendedTests(recommended);
     };
 
     // Tabs config
@@ -221,18 +226,8 @@ export const FlowView = () => {
         </div>
     );
 
-    // Toggle function for questionnaire
-    const toggleModule = (id) => {
-        if (tempSelectedModules.includes(id)) {
-            setTempSelectedModules(tempSelectedModules.filter(m => m !== id));
-        } else {
-            setTempSelectedModules([...tempSelectedModules, id]);
-        }
-    };
-
     // Step 2.5: What troubles you? (Care path only)
     if (internalStep === 2.5) {
-
         return (
             <div className="max-w-3xl mx-auto px-4 py-12 animate-fade-in-up">
                 <button onClick={() => setStep(2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
@@ -272,69 +267,64 @@ export const FlowView = () => {
         );
     }
 
-    // Step 3: NEW Tabbed Order Configurator
+    // Step 3: Area-based Order Configurator
     if (internalStep === 3) {
-        // Test card component
-        const TestCard = ({ test, isSelected, isIncluded, isRecommended, onToggle }) => (
-            <div
-                onClick={() => !isIncluded && onToggle(test.id)}
-                className={`p-4 rounded-xl border transition-all ${isIncluded ? 'cursor-default' : 'cursor-pointer hover:shadow-md'} 
-                    ${isIncluded ? 'bg-tertiary-container/30 border-tertiary/30' :
-                        isSelected ? 'bg-primary-container border-primary' :
-                            'bg-surface-container-low border-surface-outline-variant hover:border-surface-outline'}`}
-            >
-                <div className="flex items-start gap-4">
-                    <div className={`mt-1 w-6 h-6 rounded flex items-center justify-center flex-shrink-0 
-                        ${isIncluded ? 'bg-tertiary text-tertiary-on' :
-                            isSelected ? 'bg-primary text-primary-on' :
-                                'border-2 border-surface-outline'}`}>
-                        {(isIncluded || isSelected) && <Icon name="check" size={16} />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <Icon name={test.icon} size={18} className={isSelected || isIncluded ? 'text-primary' : 'text-surface-on-variant'} />
-                            <span className={`font-bold ${isIncluded ? 'text-tertiary' : 'text-surface-on'}`}>{test.name}</span>
-                            {isIncluded && <span className="text-xs px-2 py-0.5 rounded-full bg-tertiary/20 text-tertiary font-medium">V ceně</span>}
-                            {isRecommended && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-container text-secondary-on-container font-medium">Doporučeno</span>}
+        // Health Area Card Component
+        const AreaCard = ({ area, isExpanded, onToggleExpansion, priceOverride }) => {
+            const expansionPrice = priceOverride || (area.expansion?.markers?.reduce((sum, m) => sum + (LAB_COSTS[m]?.price || 0), 0));
+
+            return (
+                <div className={`rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
+                    {/* Area Header */}
+                    <div className="p-6">
+                        <div className="flex items-start gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${area.included ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
+                                <Icon name={area.icon} size={24} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-lg text-surface-on">{area.name}</h4>
+                                    {area.included && (
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-tertiary-container text-tertiary font-medium">V ceně</span>
+                                    )}
+                                </div>
+                                <p className="text-surface-on-variant text-sm leading-relaxed">
+                                    {area.baseDescription}
+                                </p>
+                            </div>
                         </div>
-                        <div className="text-sm text-surface-on-variant mt-1">{test.desc}</div>
                     </div>
-                    {!isIncluded && test.price > 0 && (
-                        <div className="text-sm font-bold text-surface-on-variant flex-shrink-0">
-                            +{test.price} Kč
+
+                    {/* Expansion Toggle */}
+                    {area.expansion && (
+                        <div
+                            onClick={() => onToggleExpansion(area.id)}
+                            className={`px-6 py-4 border-t cursor-pointer transition-all ${isExpanded
+                                ? 'bg-primary-container border-primary/30'
+                                : 'bg-surface-dim border-surface-outline-variant hover:bg-surface-container-high'}`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-6 h-6 rounded flex items-center justify-center ${isExpanded ? 'bg-primary text-primary-on' : 'border-2 border-surface-outline'}`}>
+                                        {isExpanded && <Icon name="check" size={16} />}
+                                    </div>
+                                    <div>
+                                        <div className={`font-bold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
+                                            {area.expansion.name}
+                                        </div>
+                                        <div className="text-xs text-surface-on-variant mt-0.5">
+                                            {area.expansion.description}
+                                        </div>
+                                    </div>
+                                </div>
+                                {expansionPrice > 0 && (
+                                    <div className={`text-sm font-bold ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
+                                        +{expansionPrice} Kč
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
-                </div>
-            </div>
-        );
-
-        // Blood test card for lab markers
-        const BloodTestCard = ({ testId, isSelected, isIncluded, isRecommended }) => {
-            const test = LAB_COSTS[testId];
-            if (!test) return null;
-            return (
-                <div
-                    onClick={() => !isIncluded && toggleBloodTest(testId)}
-                    className={`p-3 rounded-lg border transition-all ${isIncluded ? 'cursor-default' : 'cursor-pointer hover:shadow-sm'} 
-                        ${isIncluded ? 'bg-tertiary-container/30 border-tertiary/30' :
-                            isSelected ? 'bg-primary-container border-primary' :
-                                'bg-surface border-surface-outline-variant hover:border-surface-outline'}`}
-                >
-                    <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 
-                            ${isIncluded ? 'bg-tertiary text-tertiary-on' :
-                                isSelected ? 'bg-primary text-primary-on' :
-                                    'border border-surface-outline'}`}>
-                            {(isIncluded || isSelected) && <Icon name="check" size={14} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <span className={`text-sm ${isIncluded ? 'text-tertiary' : 'text-surface-on'}`}>{test.name}</span>
-                            {isRecommended && <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-secondary-container text-secondary-on-container">!</span>}
-                        </div>
-                        {!isIncluded && (
-                            <span className="text-xs font-medium text-surface-on-variant">+{test.price} Kč</span>
-                        )}
-                    </div>
                 </div>
             );
         };
@@ -350,7 +340,7 @@ export const FlowView = () => {
                     <div className="lg:col-span-2 space-y-6">
                         <div>
                             <h2 className="text-4xl font-display mb-2 text-surface-on">Sestavte si balíček</h2>
-                            <p className="text-surface-on-variant text-lg">Vyberte si testy ze tří kategorií. Základ je vždy v ceně.</p>
+                            <p className="text-surface-on-variant text-lg">Vyberte oblasti zdraví, které chcete prověřit. Každou oblast můžete rozšířit o detailnější vyšetření.</p>
                         </div>
 
                         {/* Tabs */}
@@ -364,98 +354,57 @@ export const FlowView = () => {
                                 >
                                     <Icon name={tab.icon} className={activeTab === tab.id ? tab.color : ''} />
                                     <span>{tab.label}</span>
-                                    {tab.id === 'blood' && selectedBloodTests.length > 0 && (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-on">{selectedBloodTests.length}</span>
-                                    )}
-                                    {tab.id === 'body' && selectedPhysicalTests.length > 0 && (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-on">{selectedPhysicalTests.length}</span>
-                                    )}
-                                    {tab.id === 'head' && selectedCognitiveTests.length > 0 && (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-on">{selectedCognitiveTests.length}</span>
-                                    )}
                                 </button>
                             ))}
                         </div>
 
                         {/* Tab Content */}
-                        <div className="rounded-3xl bg-surface-container-low border border-surface-outline-variant p-6 min-h-[400px]">
+                        <div className="space-y-4">
                             {/* Blood Tab */}
                             {activeTab === 'blood' && (
-                                <div className="space-y-6">
-                                    {BLOOD_TEST_GROUPS.map(group => {
-                                        if (group.genderFilter && group.genderFilter !== client.gender) return null;
-                                        const hasTests = group.tests?.length > 0 || group.extras?.length > 0;
-                                        if (!hasTests) return null;
-
+                                <>
+                                    {BLOOD_AREAS.map(area => {
+                                        if (area.genderFilter && area.genderFilter !== client.gender) return null;
                                         return (
-                                            <div key={group.id} className="space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    {group.icon && <Icon name={group.icon} className="text-primary" size={20} />}
-                                                    <h4 className="font-bold text-surface-on">{group.name}</h4>
-                                                    {group.included && <span className="text-xs px-2 py-0.5 rounded-full bg-tertiary-container text-tertiary font-medium">Vždy v ceně</span>}
-                                                </div>
-                                                <div className="grid sm:grid-cols-2 gap-2">
-                                                    {group.tests?.map(testId => (
-                                                        <BloodTestCard
-                                                            key={testId}
-                                                            testId={testId}
-                                                            isIncluded={group.included}
-                                                            isSelected={selectedBloodTests.includes(testId)}
-                                                            isRecommended={recommendedTests.includes(testId)}
-                                                        />
-                                                    ))}
-                                                    {group.extras?.map(testId => (
-                                                        <BloodTestCard
-                                                            key={testId}
-                                                            testId={testId}
-                                                            isIncluded={false}
-                                                            isSelected={selectedBloodTests.includes(testId)}
-                                                            isRecommended={recommendedTests.includes(testId)}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
+                                            <AreaCard
+                                                key={area.id}
+                                                area={area}
+                                                isExpanded={expandedBloodAreas.includes(area.id)}
+                                                onToggleExpansion={toggleBloodExpansion}
+                                            />
                                         );
                                     })}
-                                </div>
+                                </>
                             )}
 
                             {/* Body Tab */}
                             {activeTab === 'body' && (
-                                <div className="space-y-4">
-                                    <p className="text-surface-on-variant text-sm mb-4">
-                                        Fyzické testy prováděné přímo u vás doma naší sestrou.
-                                    </p>
-                                    {PHYSICAL_TESTS.map(test => (
-                                        <TestCard
-                                            key={test.id}
-                                            test={test}
-                                            isIncluded={test.included}
-                                            isSelected={selectedPhysicalTests.includes(test.id)}
-                                            isRecommended={false}
-                                            onToggle={togglePhysicalTest}
+                                <>
+                                    {BODY_AREAS.map(area => (
+                                        <AreaCard
+                                            key={area.id}
+                                            area={area}
+                                            isExpanded={expandedBodyAreas.includes(area.id)}
+                                            onToggleExpansion={toggleBodyExpansion}
+                                            priceOverride={area.price}
                                         />
                                     ))}
-                                </div>
+                                </>
                             )}
 
                             {/* Head Tab */}
                             {activeTab === 'head' && (
-                                <div className="space-y-4">
-                                    <p className="text-surface-on-variant text-sm mb-4">
-                                        Kognitivní a smyslové testy pro kompletní geriatrický screening.
-                                    </p>
-                                    {COGNITIVE_TESTS.map(test => (
-                                        <TestCard
-                                            key={test.id}
-                                            test={test}
-                                            isIncluded={false}
-                                            isSelected={selectedCognitiveTests.includes(test.id)}
-                                            isRecommended={false}
-                                            onToggle={toggleCognitiveTest}
+                                <>
+                                    {HEAD_AREAS.map(area => (
+                                        <AreaCard
+                                            key={area.id}
+                                            area={area}
+                                            isExpanded={expandedHeadAreas.includes(area.id)}
+                                            onToggleExpansion={toggleHeadExpansion}
+                                            priceOverride={area.price}
                                         />
                                     ))}
-                                </div>
+                                </>
                             )}
                         </div>
                     </div>
@@ -489,20 +438,20 @@ export const FlowView = () => {
                                     </span>
                                     <span className="font-bold text-surface-on">{calculateBloodPrice()} Kč</span>
                                 </div>
-                                {calculatePhysicalPrice() > 0 && (
+                                {calculateBodyPrice() > 0 && (
                                     <div className="flex justify-between text-primary">
                                         <span className="flex items-center gap-2">
                                             <Icon name="accessibility_new" size={16} /> Tělo
                                         </span>
-                                        <span className="font-bold">+{calculatePhysicalPrice()} Kč</span>
+                                        <span className="font-bold">+{calculateBodyPrice()} Kč</span>
                                     </div>
                                 )}
-                                {calculateCognitivePrice() > 0 && (
+                                {calculateHeadPrice() > 0 && (
                                     <div className="flex justify-between text-primary">
                                         <span className="flex items-center gap-2">
                                             <Icon name="psychology" size={16} /> Hlava
                                         </span>
-                                        <span className="font-bold">+{calculateCognitivePrice()} Kč</span>
+                                        <span className="font-bold">+{calculateHeadPrice()} Kč</span>
                                     </div>
                                 )}
                                 {frequency.discount > 0 && (
@@ -523,25 +472,21 @@ export const FlowView = () => {
                                 Objednat termín
                             </button>
 
-                            {/* Quick stats */}
-                            <div className="mt-6 pt-6 border-t border-surface-outline-variant grid grid-cols-3 gap-2 text-center">
-                                <div>
-                                    <div className="text-2xl font-bold text-surface-on">
-                                        {BLOOD_TEST_GROUPS.find(g => g.id === 'base')?.tests.length + selectedBloodTests.length}
+                            {/* Summary */}
+                            <div className="mt-6 pt-6 border-t border-surface-outline-variant">
+                                <div className="text-xs text-surface-on-variant space-y-1">
+                                    <div className="flex justify-between">
+                                        <span>Rozšíření krve:</span>
+                                        <span className="font-bold">{expandedBloodAreas.length}</span>
                                     </div>
-                                    <div className="text-xs text-surface-on-variant">Krevních testů</div>
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-surface-on">
-                                        {PHYSICAL_TESTS.filter(t => t.included).length + selectedPhysicalTests.length}
+                                    <div className="flex justify-between">
+                                        <span>Rozšíření těla:</span>
+                                        <span className="font-bold">{expandedBodyAreas.length}</span>
                                     </div>
-                                    <div className="text-xs text-surface-on-variant">Fyzických testů</div>
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-surface-on">
-                                        {selectedCognitiveTests.length}
+                                    <div className="flex justify-between">
+                                        <span>Rozšíření hlavy:</span>
+                                        <span className="font-bold">{expandedHeadAreas.length}</span>
                                     </div>
-                                    <div className="text-xs text-surface-on-variant">Kognitivních</div>
                                 </div>
                             </div>
                         </div>
