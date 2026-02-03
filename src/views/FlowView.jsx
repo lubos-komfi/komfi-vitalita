@@ -268,8 +268,9 @@ export const FlowView = () => {
         );
     }
 
-    // Step 3: Area-based Order Configurator
-    if (internalStep === 3) {
+    // Step 3.x: Step-by-step Order Configurator
+    // 3.1 = Krev, 3.2 = Tělo, 3.3 = Hlava, 3.4 = Souhrn
+    if (internalStep >= 3 && internalStep < 4) {
         // Toggle details visibility
         const toggleDetails = (areaId) => setShowDetails(prev => ({ ...prev, [areaId]: !prev[areaId] }));
 
@@ -297,7 +298,6 @@ export const FlowView = () => {
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <h4 className="font-bold text-lg text-surface-on">{area.name}</h4>
-                                    {/* Test count chip */}
                                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
                                         {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
                                     </span>
@@ -311,7 +311,7 @@ export const FlowView = () => {
                             </div>
                         </div>
 
-                        {/* Show details toggle - for base markers */}
+                        {/* Show details toggle */}
                         {(area.baseMarkers || area.tests) && (
                             <button
                                 onClick={() => onToggleDetails(area.id)}
@@ -325,21 +325,18 @@ export const FlowView = () => {
                         {/* Marker details list */}
                         {showMarkerDetails && (
                             <div className="mt-3 pl-4 border-l-2 border-surface-outline-variant space-y-1">
-                                {/* Base markers for blood */}
                                 {area.baseMarkers?.map(markerId => (
                                     <div key={markerId} className="flex items-center gap-2 text-xs text-surface-on-variant">
                                         <Icon name="check_circle" size={14} className="text-tertiary" />
                                         <span>{LAB_COSTS[markerId]?.name || markerId}</span>
                                     </div>
                                 ))}
-                                {/* Tests for body/head */}
                                 {area.tests?.map(testId => (
                                     <div key={testId} className="flex items-center gap-2 text-xs text-surface-on-variant">
                                         <Icon name="check_circle" size={14} className="text-tertiary" />
                                         <span>{testId === 'inbody' ? 'InBody měření' : testId === 'grip' ? 'Síla stisku' : testId === 'bp' ? 'Krevní tlak' : testId}</span>
                                     </div>
                                 ))}
-                                {/* Expansion markers if expanded */}
                                 {isExpanded && area.expansion?.markers?.map(markerId => (
                                     <div key={markerId} className="flex items-center gap-2 text-xs text-primary">
                                         <Icon name="add_circle" size={14} />
@@ -420,202 +417,372 @@ export const FlowView = () => {
             return sum;
         }, 0);
 
-        return (
-            <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up">
-                <button onClick={() => setStep(path === 'care' ? 2.5 : 2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                    <Icon name="arrow_back" /> Zpět
-                </button>
+        // Step progress indicator
+        const stepConfig = [
+            { step: 3.1, label: 'Krev', icon: 'bloodtype', color: 'text-red-500' },
+            { step: 3.2, label: 'Tělo', icon: 'accessibility_new', color: 'text-teal-500' },
+            { step: 3.3, label: 'Hlava', icon: 'psychology', color: 'text-violet-500' },
+            { step: 3.4, label: 'Souhrn', icon: 'receipt_long', color: 'text-primary' }
+        ];
 
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Main content */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div>
-                            <h2 className="text-4xl font-display mb-2 text-surface-on">Sestavte si balíček</h2>
-                            <p className="text-surface-on-variant text-lg">Vyberte oblasti zdraví, které chcete prověřit. Každou oblast můžete rozšířit o detailnější vyšetření.</p>
+        const StepProgress = () => (
+            <div className="flex items-center justify-center gap-2 mb-8">
+                {stepConfig.map((s, i) => (
+                    <React.Fragment key={s.step}>
+                        <button
+                            onClick={() => internalStep >= s.step && setStep(s.step)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${internalStep === s.step
+                                    ? 'bg-primary text-primary-on font-bold'
+                                    : internalStep > s.step
+                                        ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
+                                        : 'bg-surface-container-high text-surface-on-variant'
+                                }`}
+                            disabled={internalStep < s.step}
+                        >
+                            <Icon name={internalStep > s.step ? 'check_circle' : s.icon} size={18} className={internalStep === s.step ? '' : s.color} />
+                            <span className="text-sm">{s.label}</span>
+                        </button>
+                        {i < stepConfig.length - 1 && (
+                            <Icon name="chevron_right" size={20} className="text-surface-on-variant" />
+                        )}
+                    </React.Fragment>
+                ))}
+            </div>
+        );
+
+        // Step 3.1: Krev
+        if (internalStep === 3 || internalStep === 3.1) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                    <button onClick={() => setStep(path === 'care' ? 2.5 : 2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
+                        <Icon name="arrow_back" /> Zpět
+                    </button>
+
+                    <StepProgress />
+
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center gap-3 mb-4">
+                            <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <Icon name="bloodtype" size={28} className="text-red-500" />
+                            </div>
+                            <h2 className="text-4xl font-display text-surface-on">Krevní testy</h2>
                         </div>
-
-                        {/* Tabs with test counts */}
-                        <div className="flex p-1 rounded-2xl bg-surface-container-high">
-                            {tabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-1 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 
-                                        ${activeTab === tab.id ? 'bg-surface shadow-md text-surface-on' : 'text-surface-on-variant hover:text-surface-on'}`}
-                                >
-                                    <Icon name={tab.icon} className={activeTab === tab.id ? tab.color : ''} />
-                                    <span>{tab.label}</span>
-                                    {/* Test count badge */}
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-primary-container text-primary' : 'bg-surface-container text-surface-on-variant'}`}>
-                                        {tab.id === 'blood' ? bloodTestCount : tab.id === 'body' ? bodyTestCount : headTestCount}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Tab Content */}
-                        <div className="space-y-4">
-                            {/* Blood Tab */}
-                            {activeTab === 'blood' && (
-                                <>
-                                    {BLOOD_AREAS.map(area => {
-                                        if (area.genderFilter && area.genderFilter !== client.gender) return null;
-                                        return (
-                                            <AreaCard
-                                                key={area.id}
-                                                area={area}
-                                                isExpanded={expandedBloodAreas.includes(area.id)}
-                                                onToggleExpansion={toggleBloodExpansion}
-                                                showMarkerDetails={showDetails[area.id]}
-                                                onToggleDetails={toggleDetails}
-                                            />
-                                        );
-                                    })}
-                                </>
-                            )}
-
-                            {/* Body Tab */}
-                            {activeTab === 'body' && (
-                                <>
-                                    {BODY_AREAS.map(area => (
-                                        <AreaCard
-                                            key={area.id}
-                                            area={area}
-                                            isExpanded={expandedBodyAreas.includes(area.id)}
-                                            onToggleExpansion={toggleBodyExpansion}
-                                            priceOverride={area.price}
-                                            showMarkerDetails={showDetails[area.id]}
-                                            onToggleDetails={toggleDetails}
-                                        />
-                                    ))}
-                                </>
-                            )}
-
-                            {/* Head Tab */}
-                            {activeTab === 'head' && (
-                                <>
-                                    {HEAD_AREAS.map(area => (
-                                        <AreaCard
-                                            key={area.id}
-                                            area={area}
-                                            isExpanded={expandedHeadAreas.includes(area.id)}
-                                            onToggleExpansion={toggleHeadExpansion}
-                                            priceOverride={area.price}
-                                            showMarkerDetails={showDetails[area.id]}
-                                            onToggleDetails={toggleDetails}
-                                        />
-                                    ))}
-                                </>
-                            )}
-                        </div>
+                        <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
+                            Základní i rozšířené krevní markery odhalující stav vašeho zdraví. Každou sekci můžete rozšířit o detailnější vyšetření.
+                        </p>
                     </div>
 
-                    {/* Sticky Sidebar - Order Summary */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 p-8 rounded-3xl bg-surface-container-low border border-surface-outline-variant shadow-xl">
-                            <h3 className="font-display text-2xl mb-6 text-surface-on">Váš balíček</h3>
+                    <div className="space-y-4 mb-8">
+                        {BLOOD_AREAS.map(area => {
+                            if (area.genderFilter && area.genderFilter !== client.gender) return null;
+                            return (
+                                <AreaCard
+                                    key={area.id}
+                                    area={area}
+                                    isExpanded={expandedBloodAreas.includes(area.id)}
+                                    onToggleExpansion={toggleBloodExpansion}
+                                    showMarkerDetails={showDetails[area.id]}
+                                    onToggleDetails={toggleDetails}
+                                />
+                            );
+                        })}
+                    </div>
 
-                            {/* Frequency selector */}
-                            <div className="flex p-1 rounded-xl bg-surface-container-high mb-6">
-                                {FREQUENCIES.map(f => (
-                                    <button key={f.id} onClick={() => setFrequency(f)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 ${frequency.id === f.id ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>
-                                        <span>{f.label}</span>
-                                        {f.discount > 0 && <span className="text-[9px] px-1.5 rounded-full bg-tertiary-container text-tertiary-on-container">-{Math.round(f.discount * 100)}%</span>}
+                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
+                        <div className="text-surface-on-variant">
+                            <span className="text-sm">Vybrané krevní testy:</span>
+                            <span className="ml-2 font-bold text-surface-on">{bloodTestCount}</span>
+                        </div>
+                        <button onClick={() => setStep(3.2)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
+                            Pokračovat <Icon name="arrow_forward" />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Step 3.2: Tělo
+        if (internalStep === 3.2) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                    <button onClick={() => setStep(3.1)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
+                        <Icon name="arrow_back" /> Zpět na Krev
+                    </button>
+
+                    <StepProgress />
+
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center gap-3 mb-4">
+                            <div className="w-14 h-14 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                                <Icon name="accessibility_new" size={28} className="text-teal-500" />
+                            </div>
+                            <h2 className="text-4xl font-display text-surface-on">Fyzické testy</h2>
+                        </div>
+                        <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
+                            Měření tělesných funkcí a fyzické kondice. Základní měření jsou v ceně, rozšíření jsou volitelná.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                        {BODY_AREAS.map(area => (
+                            <AreaCard
+                                key={area.id}
+                                area={area}
+                                isExpanded={expandedBodyAreas.includes(area.id)}
+                                onToggleExpansion={toggleBodyExpansion}
+                                priceOverride={area.price}
+                                showMarkerDetails={showDetails[area.id]}
+                                onToggleDetails={toggleDetails}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
+                        <div className="text-surface-on-variant">
+                            <span className="text-sm">Vybrané fyzické testy:</span>
+                            <span className="ml-2 font-bold text-surface-on">{bodyTestCount}</span>
+                        </div>
+                        <button onClick={() => setStep(3.3)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
+                            Pokračovat <Icon name="arrow_forward" />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Step 3.3: Hlava
+        if (internalStep === 3.3) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                    <button onClick={() => setStep(3.2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
+                        <Icon name="arrow_back" /> Zpět na Tělo
+                    </button>
+
+                    <StepProgress />
+
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center gap-3 mb-4">
+                            <div className="w-14 h-14 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                <Icon name="psychology" size={28} className="text-violet-500" />
+                            </div>
+                            <h2 className="text-4xl font-display text-surface-on">Kognitivní testy</h2>
+                        </div>
+                        <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
+                            Volitelné testy paměti, myšlení a smyslů. Tyto testy nejsou v základu zahrnuty – přidejte je, pokud máte zájem.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                        {HEAD_AREAS.map(area => (
+                            <AreaCard
+                                key={area.id}
+                                area={area}
+                                isExpanded={expandedHeadAreas.includes(area.id)}
+                                onToggleExpansion={toggleHeadExpansion}
+                                priceOverride={area.price}
+                                showMarkerDetails={showDetails[area.id]}
+                                onToggleDetails={toggleDetails}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
+                        <div className="text-surface-on-variant">
+                            <span className="text-sm">Vybrané kognitivní testy:</span>
+                            <span className="ml-2 font-bold text-surface-on">{headTestCount}</span>
+                        </div>
+                        <button onClick={() => setStep(3.4)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
+                            Pokračovat na Souhrn <Icon name="arrow_forward" />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Step 3.4: Souhrn (with tabs for editing)
+        if (internalStep === 3.4) {
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up">
+                    <button onClick={() => setStep(3.3)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
+                        <Icon name="arrow_back" /> Zpět na Hlava
+                    </button>
+
+                    <StepProgress />
+
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Main content */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <div>
+                                <h2 className="text-4xl font-display mb-2 text-surface-on">Souhrn balíčku</h2>
+                                <p className="text-surface-on-variant text-lg">Zkontrolujte si vybrané testy. Kliknutím na záložku můžete upravit výběr.</p>
+                            </div>
+
+                            {/* Tabs for editing */}
+                            <div className="flex p-1 rounded-2xl bg-surface-container-high">
+                                {tabs.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex-1 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 
+                                            ${activeTab === tab.id ? 'bg-surface shadow-md text-surface-on' : 'text-surface-on-variant hover:text-surface-on'}`}
+                                    >
+                                        <Icon name={tab.icon} className={activeTab === tab.id ? tab.color : ''} />
+                                        <span>{tab.label}</span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-primary-container text-primary' : 'bg-surface-container text-surface-on-variant'}`}>
+                                            {tab.id === 'blood' ? bloodTestCount : tab.id === 'body' ? bodyTestCount : headTestCount}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
 
-                            {/* Sections summary - always show Krev + Tělo */}
-                            <div className="space-y-4 mb-6 pb-6 border-b border-surface-outline-variant">
-                                {/* Krev - always shown */}
-                                <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <Icon name="bloodtype" size={20} className="text-red-500" />
-                                            <span className="font-bold text-surface-on">Krev</span>
-                                        </div>
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                                            {bloodTestCount} testů
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-surface-on-variant">{calculateBloodPrice()} Kč</div>
-                                    {expandedBloodAreas.length > 0 && (
-                                        <div className="mt-2 text-xs text-primary">
-                                            +{expandedBloodAreas.length} rozšíření
-                                        </div>
-                                    )}
+                            {/* Tab Content */}
+                            <div className="space-y-4">
+                                {activeTab === 'blood' && (
+                                    <>
+                                        {BLOOD_AREAS.map(area => {
+                                            if (area.genderFilter && area.genderFilter !== client.gender) return null;
+                                            return (
+                                                <AreaCard
+                                                    key={area.id}
+                                                    area={area}
+                                                    isExpanded={expandedBloodAreas.includes(area.id)}
+                                                    onToggleExpansion={toggleBloodExpansion}
+                                                    showMarkerDetails={showDetails[area.id]}
+                                                    onToggleDetails={toggleDetails}
+                                                />
+                                            );
+                                        })}
+                                    </>
+                                )}
+
+                                {activeTab === 'body' && (
+                                    <>
+                                        {BODY_AREAS.map(area => (
+                                            <AreaCard
+                                                key={area.id}
+                                                area={area}
+                                                isExpanded={expandedBodyAreas.includes(area.id)}
+                                                onToggleExpansion={toggleBodyExpansion}
+                                                priceOverride={area.price}
+                                                showMarkerDetails={showDetails[area.id]}
+                                                onToggleDetails={toggleDetails}
+                                            />
+                                        ))}
+                                    </>
+                                )}
+
+                                {activeTab === 'head' && (
+                                    <>
+                                        {HEAD_AREAS.map(area => (
+                                            <AreaCard
+                                                key={area.id}
+                                                area={area}
+                                                isExpanded={expandedHeadAreas.includes(area.id)}
+                                                onToggleExpansion={toggleHeadExpansion}
+                                                priceOverride={area.price}
+                                                showMarkerDetails={showDetails[area.id]}
+                                                onToggleDetails={toggleDetails}
+                                            />
+                                        ))}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Sticky Sidebar - Order Summary */}
+                        <div className="lg:col-span-1">
+                            <div className="sticky top-24 p-8 rounded-3xl bg-surface-container-low border border-surface-outline-variant shadow-xl">
+                                <h3 className="font-display text-2xl mb-6 text-surface-on">Váš balíček</h3>
+
+                                {/* Frequency selector */}
+                                <div className="flex p-1 rounded-xl bg-surface-container-high mb-6">
+                                    {FREQUENCIES.map(f => (
+                                        <button key={f.id} onClick={() => setFrequency(f)} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 ${frequency.id === f.id ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>
+                                            <span>{f.label}</span>
+                                            {f.discount > 0 && <span className="text-[9px] px-1.5 rounded-full bg-tertiary-container text-tertiary-on-container">-{Math.round(f.discount * 100)}%</span>}
+                                        </button>
+                                    ))}
                                 </div>
 
-                                {/* Tělo - always shown */}
-                                <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <Icon name="accessibility_new" size={20} className="text-teal-500" />
-                                            <span className="font-bold text-surface-on">Tělo</span>
-                                        </div>
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
-                                            {bodyTestCount} testů
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-surface-on-variant">
-                                        {calculateBodyPrice() > 0 ? `+${calculateBodyPrice()} Kč` : 'V ceně služby'}
-                                    </div>
-                                    {expandedBodyAreas.length > 0 && (
-                                        <div className="mt-2 text-xs text-primary">
-                                            +{expandedBodyAreas.length} rozšíření
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Hlava - shown only if any expansion selected */}
-                                {expandedHeadAreas.length > 0 && (
-                                    <div className="p-4 rounded-xl bg-primary-container/30 border border-primary/30">
+                                {/* Sections summary */}
+                                <div className="space-y-4 mb-6 pb-6 border-b border-surface-outline-variant">
+                                    <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <Icon name="psychology" size={20} className="text-violet-500" />
-                                                <span className="font-bold text-surface-on">Hlava</span>
+                                                <Icon name="bloodtype" size={20} className="text-red-500" />
+                                                <span className="font-bold text-surface-on">Krev</span>
                                             </div>
-                                            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
-                                                {headTestCount} testů
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                                                {bloodTestCount} testů
                                             </span>
                                         </div>
-                                        <div className="text-sm text-primary font-medium">+{calculateHeadPrice()} Kč</div>
+                                        <div className="text-sm text-surface-on-variant">{calculateBloodPrice()} Kč</div>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Price breakdown */}
-                            <div className="space-y-2 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-surface-on-variant">Služba (sestra, odběr)</span>
-                                    <span className="font-bold text-surface-on">{SERVICE_FEE} Kč</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-surface-on-variant">Laboratorní testy</span>
-                                    <span className="font-bold text-surface-on">{calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice()} Kč</span>
-                                </div>
-                                {frequency.discount > 0 && (
-                                    <div className="flex justify-between text-tertiary">
-                                        <span>Sleva za frekvenci</span>
-                                        <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
+                                    <div className="p-4 rounded-xl bg-surface-container border border-surface-outline-variant">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="accessibility_new" size={20} className="text-teal-500" />
+                                                <span className="font-bold text-surface-on">Tělo</span>
+                                            </div>
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
+                                                {bodyTestCount} testů
+                                            </span>
+                                        </div>
+                                        <div className="text-sm text-surface-on-variant">
+                                            {calculateBodyPrice() > 0 ? `+${calculateBodyPrice()} Kč` : 'V ceně služby'}
+                                        </div>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Total */}
-                            <div className="flex justify-between items-end mb-8">
-                                <span className="text-sm uppercase font-bold tracking-widest text-surface-on-variant">Celkem / rok</span>
-                                <span className="text-4xl font-display text-primary">{calculateTotal()} Kč</span>
-                            </div>
+                                    {expandedHeadAreas.length > 0 && (
+                                        <div className="p-4 rounded-xl bg-primary-container/30 border border-primary/30">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Icon name="psychology" size={20} className="text-violet-500" />
+                                                    <span className="font-bold text-surface-on">Hlava</span>
+                                                </div>
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
+                                                    {headTestCount} testů
+                                                </span>
+                                            </div>
+                                            <div className="text-sm text-primary font-medium">+{calculateHeadPrice()} Kč</div>
+                                        </div>
+                                    )}
+                                </div>
 
-                            <button onClick={() => setStep(4)} className="w-full py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg">
-                                Objednat termín
-                            </button>
+                                {/* Price breakdown */}
+                                <div className="space-y-2 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-surface-on-variant">Služba (sestra, odběr)</span>
+                                        <span className="font-bold text-surface-on">{SERVICE_FEE} Kč</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-surface-on-variant">Laboratorní testy</span>
+                                        <span className="font-bold text-surface-on">{calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice()} Kč</span>
+                                    </div>
+                                    {frequency.discount > 0 && (
+                                        <div className="flex justify-between text-tertiary">
+                                            <span>Sleva za frekvenci</span>
+                                            <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Total */}
+                                <div className="flex justify-between items-end mb-8">
+                                    <span className="text-sm uppercase font-bold tracking-widest text-surface-on-variant">Celkem / rok</span>
+                                    <span className="text-4xl font-display text-primary">{calculateTotal()} Kč</span>
+                                </div>
+
+                                <button onClick={() => setStep(4)} className="w-full py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg">
+                                    Objednat termín
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 
     // Step 4: Success
