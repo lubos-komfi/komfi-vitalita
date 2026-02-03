@@ -371,6 +371,16 @@ export const FlowView = () => {
                                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
                                         {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
                                     </span>
+                                    {/* Gender segment tag */}
+                                    {area.genderFilter && (
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${area.genderFilter === 'female'
+                                                ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'
+                                                : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                            }`}>
+                                            <Icon name={area.genderFilter === 'female' ? 'female' : 'male'} size={12} />
+                                            {area.genderFilter === 'female' ? 'Pro ženy' : 'Pro muže'}
+                                        </span>
+                                    )}
                                 </div>
                                 <p className="text-surface-on-variant text-sm leading-relaxed">
                                     {area.baseDescription}
