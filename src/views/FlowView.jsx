@@ -432,10 +432,10 @@ export const FlowView = () => {
                         <button
                             onClick={() => internalStep >= s.step && setStep(s.step)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${internalStep === s.step
-                                    ? 'bg-primary text-primary-on font-bold'
-                                    : internalStep > s.step
-                                        ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
-                                        : 'bg-surface-container-high text-surface-on-variant'
+                                ? 'bg-primary text-primary-on font-bold'
+                                : internalStep > s.step
+                                    ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
+                                    : 'bg-surface-container-high text-surface-on-variant'
                                 }`}
                             disabled={internalStep < s.step}
                         >
@@ -453,26 +453,26 @@ export const FlowView = () => {
         // Step 3.1: Krev
         if (internalStep === 3 || internalStep === 3.1) {
             return (
-                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
                     <button onClick={() => setStep(path === 'care' ? 2.5 : 2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
                         <Icon name="arrow_back" /> Zpět
                     </button>
 
                     <StepProgress />
 
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-3 mb-4">
-                            <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                                <Icon name="bloodtype" size={28} className="text-red-500" />
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-4 mb-4">
+                            <div className="w-20 h-20 rounded-3xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <Icon name="bloodtype" size={40} className="text-red-500" />
                             </div>
-                            <h2 className="text-4xl font-display text-surface-on">Krevní testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Krevní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Základní i rozšířené krevní markery odhalující stav vašeho zdraví. Každou sekci můžete rozšířit o detailnější vyšetření.
                         </p>
                     </div>
 
-                    <div className="space-y-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8">
                         {BLOOD_AREAS.map(area => {
                             if (area.genderFilter && area.genderFilter !== client.gender) return null;
                             return (
@@ -504,26 +504,26 @@ export const FlowView = () => {
         // Step 3.2: Tělo
         if (internalStep === 3.2) {
             return (
-                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
                     <button onClick={() => setStep(3.1)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
                         <Icon name="arrow_back" /> Zpět na Krev
                     </button>
 
                     <StepProgress />
 
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-3 mb-4">
-                            <div className="w-14 h-14 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                                <Icon name="accessibility_new" size={28} className="text-teal-500" />
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-4 mb-4">
+                            <div className="w-20 h-20 rounded-3xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                                <Icon name="accessibility_new" size={40} className="text-teal-500" />
                             </div>
-                            <h2 className="text-4xl font-display text-surface-on">Fyzické testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Fyzické testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Měření tělesných funkcí a fyzické kondice. Základní měření jsou v ceně, rozšíření jsou volitelná.
                         </p>
                     </div>
 
-                    <div className="space-y-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8">
                         {BODY_AREAS.map(area => (
                             <AreaCard
                                 key={area.id}
@@ -553,26 +553,26 @@ export const FlowView = () => {
         // Step 3.3: Hlava
         if (internalStep === 3.3) {
             return (
-                <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up">
+                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
                     <button onClick={() => setStep(3.2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
                         <Icon name="arrow_back" /> Zpět na Tělo
                     </button>
 
                     <StepProgress />
 
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-3 mb-4">
-                            <div className="w-14 h-14 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                                <Icon name="psychology" size={28} className="text-violet-500" />
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-4 mb-4">
+                            <div className="w-20 h-20 rounded-3xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                <Icon name="psychology" size={40} className="text-violet-500" />
                             </div>
-                            <h2 className="text-4xl font-display text-surface-on">Kognitivní testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Kognitivní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Volitelné testy paměti, myšlení a smyslů. Tyto testy nejsou v základu zahrnuty – přidejte je, pokud máte zájem.
                         </p>
                     </div>
 
-                    <div className="space-y-4 mb-8">
+                    <div className="grid md:grid-cols-2 gap-4 mb-8">
                         {HEAD_AREAS.map(area => (
                             <AreaCard
                                 key={area.id}
