@@ -4,29 +4,21 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // Auto-detect system preference, fallback to localStorage
-  const getInitialTheme = () => {
-    const saved = localStorage.getItem('vitalita-theme');
-    if (saved) return saved === 'dark';
-    // Check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  };
+  // Always start with system preference
+  const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  const [isDark, setIsDark] = useState(getInitialTheme);
+  const [isDark, setIsDark] = useState(getSystemTheme);
 
+  // Apply theme class to document
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('vitalita-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Listen for system preference changes
+  // Listen for system preference changes and auto-switch
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
-      // Only auto-switch if user hasn't manually set preference
-      if (!localStorage.getItem('vitalita-theme')) {
-        setIsDark(e.matches);
-      }
+      setIsDark(e.matches);
     };
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
