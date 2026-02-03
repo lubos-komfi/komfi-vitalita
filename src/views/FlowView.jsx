@@ -34,6 +34,7 @@ export const FlowView = () => {
     const [expandedBodyAreas, setExpandedBodyAreas] = useState([]);
     const [expandedHeadAreas, setExpandedHeadAreas] = useState([]);
     const [tempSelectedModules, setTempSelectedModules] = useState([]);
+    const [showDetails, setShowDetails] = useState({});
 
     useEffect(() => {
         setInternalStep(getStepFromPath());
@@ -269,8 +270,7 @@ export const FlowView = () => {
 
     // Step 3: Area-based Order Configurator
     if (internalStep === 3) {
-        // State for showing marker details
-        const [showDetails, setShowDetails] = useState({});
+        // Toggle details visibility
         const toggleDetails = (areaId) => setShowDetails(prev => ({ ...prev, [areaId]: !prev[areaId] }));
 
         // Count tests helper
