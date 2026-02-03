@@ -345,19 +345,25 @@ export const FlowView = () => {
             }
 
             // Standard card layout (with base content + optional expansion)
+            // Check if this card has base content (should show "included" checkbox)
+            const hasBaseContent = area.baseMarkers || area.tests;
+
             return (
                 <div className={`rounded-2xl border transition-all overflow-hidden ${isExpanded ? 'border-primary bg-primary-container/20' : 'border-surface-outline-variant bg-surface-container-low'}`}>
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
-                            {/* Included checkbox - always checked */}
-                            {area.included && (
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-4 bg-tertiary text-tertiary-on">
-                                    <Icon name="check" size={18} />
+                            {/* Included checkbox - always checked for cards with base content */}
+                            {hasBaseContent && (
+                                <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-tertiary text-tertiary-on shadow-sm">
+                                        <Icon name="check" size={20} />
+                                    </div>
+                                    <span className="text-xs text-tertiary font-bold">Zahrnuto</span>
                                 </div>
                             )}
-                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${area.included ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
-                                <Icon name={area.icon} size={32} className={area.color || (area.included ? 'text-tertiary' : 'text-surface-on-variant')} />
+                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${hasBaseContent ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
+                                <Icon name={area.icon} size={32} className={area.color || (hasBaseContent ? 'text-tertiary' : 'text-surface-on-variant')} />
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -365,9 +371,6 @@ export const FlowView = () => {
                                     <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
                                         {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
                                     </span>
-                                    {area.included && (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-tertiary-container text-tertiary font-medium">V ceně</span>
-                                    )}
                                 </div>
                                 <p className="text-surface-on-variant text-sm leading-relaxed">
                                     {area.baseDescription}
