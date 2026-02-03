@@ -141,3 +141,104 @@ export const PROFILES_SPEC = {
 };
 
 export const SERVICE_FEE = 1200;
+
+// ============================================
+// PHYSICAL TESTS (Tělo)
+// ============================================
+export const PHYSICAL_TESTS = [
+    { id: 'inbody', name: 'InBody měření', desc: 'Složení těla (svaly, tuk, voda)', price: 0, included: true, icon: 'scale' },
+    { id: 'grip', name: 'Grip Strength', desc: 'Síla stisku ruky', price: 0, included: true, icon: 'front_hand' },
+    { id: 'bp', name: 'Tlak & Puls', desc: 'Základní vitální znaky', price: 0, included: true, icon: 'monitor_heart' },
+    { id: 'sts30', name: '30s Sit-to-Stand', desc: 'Síla dolních končetin, riziko pádu', price: 150, icon: 'airline_seat_recline_normal' },
+    { id: 'tug', name: 'Timed Up and Go', desc: 'Dynamická rovnováha při chůzi', price: 150, icon: 'directions_walk' },
+    { id: 'gait', name: 'Rychlost chůze', desc: '6. vitální znak, prediktor zdraví', price: 100, icon: 'speed' },
+    { id: 'ekg', name: 'Jednosvodové EKG', desc: 'Detekce fibrilace síní', price: 350, icon: 'ecg' },
+];
+
+// ============================================
+// COGNITIVE TESTS (Hlava)
+// ============================================
+export const COGNITIVE_TESTS = [
+    { id: 'minicog', name: 'Mini-Cog', desc: 'Rychlý demence screening (3 min)', price: 200, icon: 'psychology' },
+    { id: 'mmse', name: 'MMSE', desc: 'Detailní kognitivní hodnocení (30 bodů)', price: 350, icon: 'quiz' },
+    { id: 'audio', name: 'Digitální audiometrie', desc: 'Screening sluchu pomocí tabletu', price: 250, icon: 'hearing' },
+    { id: 'retina', name: 'Retinální fotografie', desc: 'Sken očí pro detekci retinopatie', price: 400, icon: 'visibility' },
+];
+
+// ============================================
+// BLOOD TEST GROUPS (Krev) - organized for UI
+// ============================================
+export const BLOOD_TEST_GROUPS = [
+    {
+        id: 'base',
+        name: 'Základ',
+        desc: 'Vždy v ceně',
+        included: true,
+        tests: ['ko', 'gluk', 'moc']
+    },
+    {
+        id: 'cardio',
+        name: 'Srdce & Cévy',
+        desc: 'Lipidový profil a kardio markery',
+        icon: 'favorite',
+        tests: ['chol', 'hdl', 'ldl', 'tri'],
+        extras: ['apob', 'homocystein']
+    },
+    {
+        id: 'liver',
+        name: 'Játra & Slinivka',
+        desc: 'Jaterní enzymy a funkce',
+        icon: 'water_drop',
+        tests: ['alt', 'ast', 'ggt'],
+        extras: ['bilirubin', 'alp', 'ams']
+    },
+    {
+        id: 'kidney',
+        name: 'Ledviny',
+        desc: 'Renální funkce',
+        icon: 'water',
+        tests: ['krea', 'urea'],
+        extras: ['acr']
+    },
+    {
+        id: 'thyroid',
+        name: 'Štítná žláza',
+        desc: 'Hormony štítné žlázy',
+        icon: 'psychology',
+        tests: ['tsh'],
+        extras: ['ft4', 'anti_tpo'],
+        genderFilter: 'female'
+    },
+    {
+        id: 'vitamins',
+        name: 'Vitamíny & Minerály',
+        desc: 'Nutriční stav',
+        icon: 'wb_sunny',
+        tests: ['mg'],
+        extras: ['vitD', 'vitB12', 'folat', 'ferritin', 'zinek', 'ca']
+    },
+    {
+        id: 'inflammation',
+        name: 'Záněty & Imunita',
+        desc: 'Zánětlivé markery',
+        icon: 'bloodtype',
+        tests: [],
+        extras: ['crp', 'bilkovina']
+    },
+    {
+        id: 'diabetes',
+        name: 'Cukrovka',
+        desc: 'Diabetické markery',
+        icon: 'cookie',
+        tests: [],
+        extras: ['hba1c', 'cpeptid']
+    },
+    {
+        id: 'prostate',
+        name: 'Prostata',
+        desc: 'Pouze muži',
+        icon: 'male',
+        tests: ['psa'],
+        genderFilter: 'male'
+    }
+];
