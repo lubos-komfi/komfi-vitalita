@@ -53,7 +53,7 @@ const AppLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex gap-1">
+            <div className="flex gap-1">
               {navItems.filter(item => !item.hidden).map(item => (
                 <NavLink
                   key={item.path}
@@ -86,32 +86,6 @@ const AppLayout = () => {
         </Suspense>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container border-t border-surface-outline-variant/20 px-2 py-3 z-50">
-        <div className="flex justify-around items-center">
-          {navItems.filter(item => !item.hidden).map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `flex flex-col items-center gap-1 min-w-[64px] transition-colors
-                  ${isActive ? 'text-primary' : 'text-surface-on-variant hover:text-surface-on'}`}
-            >
-              {({ isActive }) => (
-                <>
-                  <div className={`w-16 h-8 rounded-full flex items-center justify-center transition-colors
-                      ${isActive ? 'bg-secondary-container' : 'bg-transparent'}`}>
-                    <span className="material-icons">{item.icon}</span>
-                  </div>
-                  <span className="text-[11px] font-medium tracking-wide">
-                    {item.label === 'Kalkulačka' ? 'Kalk.' :
-                      item.label === 'Measurements' ? 'Měření' :
-                        item.label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
-      </nav>
     </div>
   );
 };
