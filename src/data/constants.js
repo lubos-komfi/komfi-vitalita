@@ -16,6 +16,8 @@ export const LAB_COSTS = {
     krea: { name: 'Kreatinin', price: 18 },
     urea: { name: 'Urea', price: 18 },
     bilkovina: { name: 'Celková bílkovina', price: 20 },
+    albumin: { name: 'Albumin', price: 25 },
+    hscrp: { name: 'Ultracitlivé CRP (hsCRP)', price: 180 },
     ams: { name: 'Amyláza (AMS)', price: 35 },
     psa: { name: 'PSA (Prostata)', price: 190 },
     tsh: { name: 'TSH (Štítná žláza)', price: 140 },
@@ -323,8 +325,8 @@ export const BLOOD_AREAS = [
         baseMarkers: ['gluk', 'hba1c'],
         expansion: {
             name: 'Rozšířit o detailní metabolismus',
-            description: 'Přidáme C-peptid pro zjištění funkce slinivky. Kompletní obraz metabolismu.',
-            markers: ['cpeptid'],
+            description: 'Přidáme albumin, celkovou bílkovinu a ultracitlivé CRP pro kompletní obraz metabolismu.',
+            markers: ['albumin', 'bilkovina', 'hscrp'],
         }
     },
     {
