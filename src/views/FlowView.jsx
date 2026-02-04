@@ -334,16 +334,15 @@ export const FlowView = () => {
         </div>
     );
 
-    // Step 2.5: What troubles you? (Care path only) - expandable symptoms
+    // Step 2.5: What troubles you? Part 1 - Metabolism and organs (Care path only)
     if (internalStep === 2.5) {
-        const toggleSymptoms = (modId) => {
-            setExpandedSymptoms(prev => ({ ...prev, [modId]: !prev[modId] }));
-        };
+        const step1Categories = HEALTH_CATEGORIES.filter(c => c.module && c.questionStep === 1);
 
         return (
             <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
                 <PrimaryProgressBar />
-                <h2 className="text-4xl font-display text-center mb-8 text-surface-on">Co vás trápí?</h2>
+                <h2 className="text-4xl font-display text-center mb-3 text-surface-on">Máte obavy ohledně...</h2>
+                <p className="text-center text-surface-on-variant mb-8">Metabolismus a vnitřní orgány</p>
 
                 {/* Dev mode switch - aligned right with cards */}
                 <div className="max-w-xl mx-auto flex justify-end items-center gap-2 mb-4">
@@ -362,7 +361,108 @@ export const FlowView = () => {
 
                 {/* Cards container - centered */}
                 <div className="flex flex-col items-center gap-3">
-                    {HEALTH_CATEGORIES.filter(c => c.module).map(cat => {
+                    {step1Categories.map(cat => {
+                        const mod = cat.module;
+                        const isSelected = tempSelectedModules.includes(mod.id);
+                        const hasSymptoms = mod.symptoms && mod.symptoms.length > 0;
+
+                        return (
+                            <div
+                                key={mod.id}
+                                onClick={() => toggleModule(mod.id)}
+                                className={`relative w-full min-w-[320px] max-w-xl rounded-2xl overflow-hidden transition-all cursor-pointer ${isSelected
+                                    ? 'bg-primary/20 dark:bg-primary/30 ring-2 ring-primary'
+                                    : 'bg-surface-container-low hover:bg-surface-container-high'
+                                    }`}
+                            >
+                                {/* Checkbox - top right */}
+                                <div className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center ${isSelected
+                                    ? 'bg-primary text-primary-on'
+                                    : 'border-2 border-surface-outline'
+                                    }`}>
+                                    {isSelected && <Icon name="check" size={14} />}
+                                </div>
+
+                                <div className="p-4 pr-10">
+                                    <div className="flex items-start gap-3">
+                                        {/* Icon */}
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-primary-container' : 'bg-surface-container-high'
+                                            }`}>
+                                            <Icon name={cat.icon} size={20} className={isSelected ? 'text-primary' : 'text-surface-on-variant'} />
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-bold text-surface-on">{mod.question}</div>
+                                            {/* Internal labels - only when devMode is on */}
+                                            {devMode && (
+                                                <div className="text-surface-on-variant text-xs mt-0.5">{mod.name} • {mod.desc}</div>
+                                            )}
+
+                                            {/* Symptoms shown directly as tags */}
+                                            {hasSymptoms && (
+                                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                                    {mod.symptoms.map((symptom, i) => (
+                                                        <span
+                                                            key={i}
+                                                            className={`px-2 py-0.5 rounded-full text-xs ${isSelected
+                                                                ? 'bg-primary/30 text-primary-on dark:text-primary'
+                                                                : 'bg-surface-container-high text-surface-on-variant'
+                                                                }`}
+                                                        >
+                                                            {symptom}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="max-w-xl mx-auto">
+                    <button
+                        onClick={() => setStep(2.6)}
+                        className="w-full mt-8 py-5 rounded-2xl text-primary-on font-bold text-lg bg-primary shadow-xl hover:scale-[1.02] transition-transform"
+                    >
+                        Pokračovat
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Step 2.6: What troubles you? Part 2 - Energy, immunity and functions (Care path only)
+    if (internalStep === 2.6) {
+        const step2Categories = HEALTH_CATEGORIES.filter(c => c.module && c.questionStep === 2);
+
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+                <PrimaryProgressBar />
+                <h2 className="text-4xl font-display text-center mb-3 text-surface-on">Máte obavy ohledně...</h2>
+                <p className="text-center text-surface-on-variant mb-8">Energie, imunita a funkce</p>
+
+                {/* Dev mode switch - aligned right with cards */}
+                <div className="max-w-xl mx-auto flex justify-end items-center gap-2 mb-4">
+                    <span className="text-[10px] text-surface-on-variant">
+                        Zobrazit interní popisky
+                    </span>
+                    <button
+                        onClick={() => setDevMode(!devMode)}
+                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${devMode ? 'bg-tertiary' : 'bg-surface-container-high'
+                            }`}
+                    >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${devMode ? 'translate-x-4' : 'translate-x-0.5'
+                            }`} />
+                    </button>
+                </div>
+
+                {/* Cards container - centered */}
+                <div className="flex flex-col items-center gap-3">
+                    {step2Categories.map(cat => {
                         const mod = cat.module;
                         const isSelected = tempSelectedModules.includes(mod.id);
                         const hasSymptoms = mod.symptoms && mod.symptoms.length > 0;

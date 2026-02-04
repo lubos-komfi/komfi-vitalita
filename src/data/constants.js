@@ -27,6 +27,8 @@ export const LAB_COSTS = {
     homocystein: { name: 'Homocystein', price: 250 },
     hba1c: { name: 'HbA1c (Dlouhý cukr)', price: 180 },
     cpeptid: { name: 'C-Peptid', price: 220 },
+    inzulin: { name: 'Inzulín', price: 220 },
+    homair: { name: 'HOMA-IR (Inzulínová rezistence)', price: 0 }, // Calculated from gluk + inzulin
     ferritin: { name: 'Ferritin (Zásoba železa)', price: 190 },
     vitD: { name: 'Vitamín D', price: 360 },
     vitB12: { name: 'Vitamín B12', price: 190 },
@@ -61,7 +63,9 @@ export const MARKER_AVAILABILITY = {
     apob: ['m_prem', 'm_srd'],
     homocystein: ['m_prem', 'm_srd'],
     hba1c: ['m_prem', 'm_reg', 'm_enr'],
-    cpeptid: ['m_prem', 'm_reg'],
+    cpeptid: ['m_prem', 'm_reg', 'm_enr'],
+    inzulin: ['m_prem', 'm_reg', 'm_enr'],
+    homair: ['m_prem', 'm_reg', 'm_enr'], // Calculated marker
     ferritin: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitD: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitB12: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
@@ -80,8 +84,22 @@ export const HEALTH_CATEGORIES = [
         module: null
     },
     {
+        id: 'obesity', title: 'Nadváha a metabolismus', icon: 'monitor_weight',
+        base: ['gluk'],
+        questionStep: 1,
+        module: {
+            id: 'obesity',
+            name: 'Metabolický profil',
+            desc: 'Inzulín + HOMA-IR + HbA1c + Cholesterol + Triglyceridy',
+            markers: ['inzulin', 'homair', 'hba1c', 'chol', 'tri'],
+            question: 'Trápí vás nadváha nebo obezita?',
+            symptoms: ['BMI nad 25', 'Tuk v oblasti břicha', 'Únava po jídle', 'Problémy s hubnutím']
+        }
+    },
+    {
         id: 'heart', title: 'Srdce a cévy', icon: 'favorite',
         base: ['chol', 'hdl', 'ldl', 'tri'],
+        questionStep: 1,
         module: {
             id: 'cardio',
             name: 'Kardio Plus',
@@ -94,6 +112,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'diabetes', title: 'Metabolismus cukrů (Diabetes)', icon: 'cookie',
         base: ['gluk'],
+        questionStep: 1,
         module: {
             id: 'diabetes',
             name: 'Diabetes Komplet',
@@ -106,6 +125,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'liver', title: 'Játra a slinivka', icon: 'water_drop',
         base: ['alt', 'ast', 'ggt', 'ams'],
+        questionStep: 1,
         module: {
             id: 'liver',
             name: 'Játra Plus',
@@ -118,6 +138,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'kidney', title: 'Ledviny', icon: 'water',
         base: ['krea', 'urea', 'moc'],
+        questionStep: 1,
         module: {
             id: 'kidney',
             name: 'Ledviny Plus',
@@ -131,10 +152,11 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'minerals', title: 'Hladina minerálů a vitamínů', icon: 'wb_sunny',
         base: ['mg'],
+        questionStep: 2,
         module: {
             id: 'vitamins',
             name: 'Vitalita & Imunita',
-            desc: 'Vit D, B12, Folát, Zinek',
+            desc: 'Vit D + B12 + Folát + Ferritin',
             markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
             question: 'Cítíte se trvale unavení?',
             symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty']
@@ -143,10 +165,11 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'immunity', title: 'Záněty a imunita', icon: 'bloodtype',
         base: ['ko', 'crp', 'bilkovina'],
+        questionStep: 2,
         module: {
             id: 'inflammation',
             name: 'Imunitní profil',
-            desc: 'Detailní krevní obraz',
+            desc: 'Krevní obraz + Bílkovina + Ferritin',
             markers: ['ko', 'bilkovina', 'ferritin'],
             question: 'Máte časté infekce nebo záněty?',
             symptoms: ['Časté nachlazení', 'Pomalé hojení ran', 'Opakované infekce', 'Zvýšená teplota'],
@@ -156,6 +179,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'thyroid', title: 'Štítná žláza', icon: 'psychology',
         base: ['tsh'],
+        questionStep: 2,
         module: {
             id: 'thyroid',
             name: 'Štítná žláza Komplet',
@@ -171,6 +195,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'mobility', title: 'Pohyblivost a rovnováha', icon: 'accessibility_new',
         base: [],
+        questionStep: 2,
         module: {
             id: 'mobility',
             name: 'SPPB testy',
@@ -186,6 +211,7 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'memory', title: 'Paměť a myšlení', icon: 'psychology_alt',
         base: [],
+        questionStep: 2,
         module: {
             id: 'memory',
             name: 'Mini-Cog test',
@@ -312,8 +338,8 @@ export const BLOOD_AREAS = [
         baseMarkers: ['crp', 'ko'],
         expansion: {
             name: 'Rozšířit o imunitní profil',
-            description: 'Přidáme celkovou bílkovinu. Vidíme, jak silný je váš imunitní systém.',
-            markers: ['bilkovina'],
+            description: 'Přidáme albumin, celkovou bílkovinu a ultrasenzitivní CRP (hsCRP) pro detekci zánětů/infekcí v těle.',
+            markers: ['albumin', 'bilkovina', 'hscrp'],
         }
     },
     {
@@ -324,9 +350,9 @@ export const BLOOD_AREAS = [
         baseDescription: 'Měříme hladinu cukru v krvi. Včasné odhalení prediabetu může zabránit rozvoji cukrovky.',
         baseMarkers: ['gluk', 'hba1c'],
         expansion: {
-            name: 'Rozšířit o detailní metabolismus',
-            description: 'Přidáme albumin, celkovou bílkovinu a ultracitlivé CRP pro kompletní obraz metabolismu.',
-            markers: ['albumin', 'bilkovina', 'hscrp'],
+            name: 'Rozšířit o inzulínovou rezistenci',
+            description: 'Přidáme C-peptid, inzulín a vypočítáme HOMA-IR index, který je nejlepším ukazatelem inzulínové rezistence.',
+            markers: ['cpeptid', 'inzulin', 'homair'],
         }
     },
     {
@@ -379,7 +405,7 @@ export const BODY_AREAS = [
         expansion: {
             name: 'Přidat SPPB testy',
             description: 'Provedeme Short Physical Performance Battery - standardizovanou sadu testů: rovnováha, rychlost chůze, vstávání ze židle. Používá se celosvětově.',
-            tests: ['sppb', 'chairstand'],
+            tests: ['sppb_balance', 'sppb_walk', 'chairstand'],
         }
     },
     {
@@ -433,7 +459,8 @@ export const PHYSICAL_TESTS = [
     { id: 'inbody', name: 'InBody měření', price: 0, included: true },
     { id: 'grip', name: 'Grip Strength', price: 0, included: true },
     { id: 'bp', name: 'Tlak & Puls', price: 0, included: true },
-    { id: 'sppb', name: 'SPPB', price: 200 },
+    { id: 'sppb_balance', name: 'SPPB - Rovnováha', price: 100 },
+    { id: 'sppb_walk', name: 'SPPB - Chůze', price: 100 },
     { id: 'chairstand', name: 'Chair-Stand test', price: 150 },
     { id: 'ekg', name: 'EKG', price: 350 },
 ];
