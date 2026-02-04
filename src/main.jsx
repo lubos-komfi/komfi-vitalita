@@ -29,6 +29,7 @@ const AppLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navItems = [
     { path: '/', label: 'Přehled', icon: 'home', hidden: true },
@@ -47,12 +48,13 @@ const AppLayout = () => {
             <img
               src={isDark ? "/img/komfi_logo_off-white.svg" : "/img/komfi_logo_off-black.svg"}
               alt="Komfi"
-              className="h-8"
+              className="h-5"
             />
-            <img src="/img/vitalitaLogo.svg" alt="Vitalita" className="h-8" />
+            <img src="/img/vitalitaLogo.svg" alt="Vitalita" className="h-5" />
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Desktop menu */}
+          <div className="hidden md:flex items-center gap-4">
             <div className="flex gap-1">
               {navItems.filter(item => !item.hidden).map(item => (
                 <NavLink
@@ -70,13 +72,44 @@ const AppLayout = () => {
             </div>
             <ThemeToggle />
           </div>
+
+          {/* Mobile hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-surface-dim"
+            >
+              <span className="material-icons">{mobileMenuOpen ? 'close' : 'menu'}</span>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden px-4 pb-4 space-y-1">
+            {navItems.filter(item => !item.hidden).map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) => `block px-4 py-3 rounded-xl text-sm font-medium transition-all
+                    ${isActive
+                    ? 'bg-secondary-container text-secondary-on-container'
+                    : 'text-surface-on-variant hover:bg-surface-dim'
+                  }`}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+        )}
       </nav>
 
       <main>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            <Route path="/" element={<LazyHomeView onNavigate={(p) => navigate(p === 'home' ? '/' : '/' + p)} />} />
+            <Route path="/" element={<LazyFlowView />} />
             <Route path="/flow/*" element={<LazyFlowView />} />
             <Route path="/measurements" element={<LazyMeasurementView />} />
             <Route path="/analysis" element={<LazyAnalysisView />} />
@@ -85,7 +118,6 @@ const AppLayout = () => {
           </Routes>
         </Suspense>
       </main>
-
     </div>
   );
 };
