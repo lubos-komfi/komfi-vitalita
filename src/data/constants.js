@@ -12,6 +12,7 @@ export const LAB_COSTS = {
     tri: { name: 'Triacylglyceroly', price: 28 },
     hdl: { name: 'HDL Cholesterol', price: 45 },
     ldl: { name: 'LDL Cholesterol', price: 38 },
+    nonhdl: { name: 'non-HDL Cholesterol', price: 0 }, // Calculated from chol - hdl
     krea: { name: 'Kreatinin', price: 18 },
     urea: { name: 'Urea', price: 18 },
     bilkovina: { name: 'Celková bílkovina', price: 20 },
@@ -48,6 +49,7 @@ export const MARKER_AVAILABILITY = {
     tri: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     hdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     ldl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
+    nonhdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'], // Same as chol/hdl
     krea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd', 'm_enr'],
     urea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     bilkovina: ['m_prem', 'm_reg'],
@@ -239,7 +241,7 @@ export const BLOOD_AREAS = [
         icon: 'favorite',
         color: 'text-red-500',
         baseDescription: 'Kontrolujeme hladinu cholesterolu a tuků v krvi. Zjistíme, jestli máte cévy čisté nebo se v nich něco ukládá.',
-        baseMarkers: ['chol', 'hdl', 'ldl', 'tri'],
+        baseMarkers: ['chol', 'hdl', 'ldl', 'nonhdl', 'tri'],
         expansion: {
             name: 'Rozšířit o detailní kardio',
             description: 'Přidáme pokročilé markery ApoB a Homocystein, které lépe predikují riziko infarktu než samotný cholesterol.',
