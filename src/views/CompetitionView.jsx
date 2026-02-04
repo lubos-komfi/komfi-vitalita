@@ -99,9 +99,9 @@ export const CompetitionView = () => {
         // S podmínkou věku/pohlaví = základ + auto
         return (
           <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30">
-              <Icon name="check" size={14} className="text-green-600 dark:text-green-400" />
-              <span className="text-[10px] font-medium text-green-600 dark:text-green-400">V základu</span>
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-200 dark:bg-green-900/50">
+              <Icon name="check" size={14} className="text-green-700 dark:text-green-300" />
+              <span className="text-[10px] font-medium text-green-700 dark:text-green-300">V základu</span>
             </div>
             <span className="text-[9px] text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.5 rounded">
               Auto: {row.condition}
@@ -110,9 +110,9 @@ export const CompetitionView = () => {
         );
       }
       return (
-        <div className="flex items-center justify-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Icon name="check" size={14} className="text-green-600 dark:text-green-400" />
-          <span className="text-[10px] font-medium text-green-600 dark:text-green-400">V základu</span>
+        <div className="flex items-center justify-center gap-1 px-2 py-1 rounded-lg bg-green-200 dark:bg-green-900/50">
+          <Icon name="check" size={14} className="text-green-700 dark:text-green-300" />
+          <span className="text-[10px] font-medium text-green-700 dark:text-green-300">V základu</span>
         </div>
       );
     } else {
@@ -136,7 +136,7 @@ export const CompetitionView = () => {
     const hasIt = MARKER_AVAILABILITY[row.markerId]?.includes(pkgId);
     if (hasIt) {
       return (
-        <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto">
+        <div className="w-6 h-6 rounded-full bg-green-200 dark:bg-green-900/50 text-green-700 dark:text-green-300 flex items-center justify-center mx-auto">
           <Icon name="check" size={14} />
         </div>
       );
