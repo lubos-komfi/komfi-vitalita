@@ -40,6 +40,7 @@ export const FlowView = () => {
     const [showDetails, setShowDetails] = useState({});
     const [expandedSymptoms, setExpandedSymptoms] = useState({});
     const [devMode, setDevMode] = useState(false); // Dev mode to show marker labels
+    const [hasKomfiMembership, setHasKomfiMembership] = useState(false); // Komfi membership discount
 
     useEffect(() => {
         const currentStep = getStepFromPath();
@@ -127,7 +128,11 @@ export const FlowView = () => {
 
     const calculateTotal = () => {
         const base = SERVICE_FEE + calculateBloodPrice() + calculateBodyPrice() + calculateHeadPrice();
-        return Math.round(base * frequency.multiplier * (1 - frequency.discount));
+        let total = Math.round(base * frequency.multiplier * (1 - frequency.discount));
+        if (hasKomfiMembership) {
+            total = Math.round(total * 0.975); // 2.5% discount for members
+        }
+        return total;
     };
 
     // Preselect based on questionnaire - expanded for all areas
@@ -1151,10 +1156,24 @@ export const FlowView = () => {
                                 </div>
 
                                 {/* Total */}
-                                <div className="flex justify-between items-end mb-8">
+                                <div className="flex justify-between items-end mb-4">
                                     <span className="text-sm uppercase font-bold tracking-widest text-surface-on-variant">Celkem / rok</span>
                                     <span className="text-4xl font-display text-primary">{calculateTotal()} Kč</span>
                                 </div>
+
+                                {/* Komfi membership checkbox */}
+                                <label className="flex items-center gap-3 p-4 rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-colors mb-6">
+                                    <input
+                                        type="checkbox"
+                                        checked={hasKomfiMembership}
+                                        onChange={(e) => setHasKomfiMembership(e.target.checked)}
+                                        className="w-5 h-5 rounded accent-primary"
+                                    />
+                                    <div className="flex-1">
+                                        <span className="text-sm font-medium text-surface-on">Máte Komfi členství?</span>
+                                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-tertiary-container text-tertiary-on-container">-2.5%</span>
+                                    </div>
+                                </label>
 
                                 <button onClick={() => setStep(4)} className="w-full py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg">
                                     Objednat termín
