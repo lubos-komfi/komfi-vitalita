@@ -23,9 +23,10 @@ export const ThemeProvider = ({ children }) => {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+  const theme = isDark ? 'dark' : 'light';
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme: () => setIsDark(!isDark) }}>
+    <ThemeContext.Provider value={{ isDark, theme, toggleTheme: () => setIsDark(!isDark) }}>
       {children}
     </ThemeContext.Provider>
   );

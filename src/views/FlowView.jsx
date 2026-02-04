@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Icon } from '../components/ui';
 import {
     LAB_COSTS,
@@ -14,6 +14,8 @@ import {
 export const FlowView = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const isAltVariant = searchParams.get('variant') === 'alt';
 
     const getStepFromPath = () => {
         const pathParts = location.pathname.split('/');
@@ -24,6 +26,7 @@ export const FlowView = () => {
     };
 
     const [internalStep, setInternalStep] = useState(getStepFromPath());
+    const [highestStepReached, setHighestStepReached] = useState(getStepFromPath());
     const [client, setClient] = useState({ gender: 'female', age: 40 });
     const [path, setPath] = useState(null);
     const [frequency, setFrequency] = useState(FREQUENCIES[1]);
@@ -35,9 +38,14 @@ export const FlowView = () => {
     const [expandedHeadAreas, setExpandedHeadAreas] = useState([]);
     const [tempSelectedModules, setTempSelectedModules] = useState([]);
     const [showDetails, setShowDetails] = useState({});
+    const [expandedSymptoms, setExpandedSymptoms] = useState({});
+    const [devMode, setDevMode] = useState(false); // Dev mode to show marker labels
 
     useEffect(() => {
-        setInternalStep(getStepFromPath());
+        const currentStep = getStepFromPath();
+        setInternalStep(currentStep);
+        // Update highest step reached
+        setHighestStepReached(prev => Math.max(prev, currentStep));
     }, [location.pathname]);
 
     const setStep = (newStep) => {
@@ -122,8 +130,9 @@ export const FlowView = () => {
         return Math.round(base * frequency.multiplier * (1 - frequency.discount));
     };
 
-    // Preselect based on questionnaire
+    // Preselect based on questionnaire - expanded for all areas
     const processQuestionnaireAnswers = (selectedModuleIds) => {
+        // Blood areas mapping
         if (selectedModuleIds.includes('cardio')) {
             setExpandedBloodAreas(prev => [...new Set([...prev, 'cardio'])]);
         }
@@ -133,26 +142,125 @@ export const FlowView = () => {
         if (selectedModuleIds.includes('liver')) {
             setExpandedBloodAreas(prev => [...new Set([...prev, 'liver'])]);
         }
+        if (selectedModuleIds.includes('kidney')) {
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'kidney'])]);
+        }
         if (selectedModuleIds.includes('vitamins')) {
             setExpandedBloodAreas(prev => [...new Set([...prev, 'energy'])]);
+        }
+        if (selectedModuleIds.includes('inflammation')) {
+            setExpandedBloodAreas(prev => [...new Set([...prev, 'inflammation'])]);
         }
         if (selectedModuleIds.includes('thyroid')) {
             setExpandedBloodAreas(prev => [...new Set([...prev, 'thyroid'])]);
         }
+        // Body areas mapping
+        if (selectedModuleIds.includes('mobility')) {
+            setExpandedBodyAreas(prev => [...new Set([...prev, 'mobility'])]);
+        }
+        // Head areas mapping
+        if (selectedModuleIds.includes('memory')) {
+            setExpandedHeadAreas(prev => [...new Set([...prev, 'memory'])]);
+        }
     };
 
-    // Tabs config
+    // Tabs config (without Souhrn - that's a separate view)
     const tabs = [
         { id: 'blood', label: 'Krev', icon: 'bloodtype', color: 'text-red-500' },
         { id: 'body', label: 'Tělo', icon: 'accessibility_new', color: 'text-teal-500' },
         { id: 'head', label: 'Hlava', icon: 'psychology', color: 'text-purple-500' },
     ];
 
-    // Step 0: Who is this for?
+    // Primary progress steps configuration (without Souhrn in breadcrumb)
+    const primarySteps = [
+        { step: 0, label: 'Pro koho' },
+        { step: 1, label: 'Cíl' },
+        { step: 2, label: 'Údaje' },
+        { step: 2.5, label: 'Obavy', showOnlyFor: 'care' },
+        { step: 3, label: 'Výběr' },
+        { step: 4, label: 'Hotovo' }
+    ];
+
+    // Get visible primary steps based on path
+    const getVisiblePrimarySteps = () => {
+        return primarySteps.filter(s => !s.showOnlyFor || s.showOnlyFor === path);
+    };
+
+    // Get the main step number (for steps like 3.1, 3.2, etc. return 3)
+    const getMainStep = (step) => Math.floor(step);
+    const highestMainStepReached = getMainStep(highestStepReached);
+
+    // Primary Progress Bar Component - compact for header level
+    const PrimaryProgressBar = () => {
+        const visibleSteps = getVisiblePrimarySteps();
+        const currentMainStep = getMainStep(internalStep);
+
+        return (
+            <div className="py-3 mb-8">
+                <div className="flex items-start justify-center gap-0">
+                    {visibleSteps.map((s, i) => {
+                        const mainStep = getMainStep(s.step);
+                        const isCompleted = currentMainStep > mainStep || (currentMainStep === mainStep && internalStep > s.step);
+                        const isCurrent = currentMainStep === mainStep;
+                        // Allow clicking on any step that was visited (even future ones)
+                        const isClickable = mainStep <= highestMainStepReached;
+                        const wasVisited = mainStep <= highestMainStepReached;
+
+                        return (
+                            <React.Fragment key={s.step}>
+                                {/* Circle with label */}
+                                <button
+                                    onClick={() => isClickable && setStep(s.step)}
+                                    disabled={!isClickable}
+                                    className={`flex flex-col items-center gap-1.5 ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+                                >
+                                    <div className={`w-4 h-4 rounded-full transition-all flex-shrink-0 ${isCompleted
+                                        ? 'bg-primary hover:scale-125'
+                                        : isCurrent
+                                            ? 'bg-primary ring-3 ring-primary/30'
+                                            : wasVisited
+                                                ? 'bg-primary/50 hover:scale-125'
+                                                : 'bg-surface-outline-variant'
+                                        }`} />
+                                    <span className={`text-[11px] font-medium whitespace-nowrap ${isCurrent
+                                        ? 'text-primary font-bold'
+                                        : isCompleted || wasVisited
+                                            ? 'text-surface-on'
+                                            : 'text-surface-on-variant'
+                                        }`}>
+                                        {s.label}
+                                    </span>
+                                </button>
+                                {/* Line between circles */}
+                                {i < visibleSteps.length - 1 && (
+                                    <div className={`h-[2px] w-10 md:w-16 mt-2 transition-all ${currentMainStep > mainStep
+                                        ? 'bg-primary'
+                                        : wasVisited && mainStep < highestMainStepReached
+                                            ? 'bg-primary/50'
+                                            : 'bg-surface-outline-variant'
+                                        }`} />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
+    // Content wrapper with top margin
+    const ContentWrapper = ({ children, className = "" }) => (
+        <div className={`pt-[15px] ${className}`}>
+            {children}
+        </div>
+    );
+
+    // Step 0: For whom?
     if (internalStep === 0) return (
-        <div className="max-w-4xl mx-auto px-4 py-16 animate-fade-in-up text-center">
-            <h1 className="text-4xl font-display mb-12 text-surface-on">Pro koho službu hledáte?</h1>
-            <div className="grid md:grid-cols-2 gap-8">
+        <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+            <PrimaryProgressBar />
+            <h2 className="text-4xl font-display text-center mb-12 text-surface-on">Pro koho službu hledáte?</h2>
+            <div className="grid md:grid-cols-2 gap-3">
                 <button onClick={() => setStep(1)} className="p-12 rounded-3xl text-left bg-surface-container-low border border-surface-outline-variant hover:border-primary transition-colors group">
                     <Icon name="accessibility_new" size={64} className="text-primary mb-6 group-hover:scale-110 transition-transform" />
                     <div className="font-display text-3xl mb-3 text-surface-on">Chci to pro sebe</div>
@@ -169,12 +277,10 @@ export const FlowView = () => {
 
     // Step 1: What's your goal?
     if (internalStep === 1) return (
-        <div className="max-w-5xl mx-auto px-4 py-12 animate-fade-in-up">
-            <button onClick={() => setStep(0)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                <Icon name="arrow_back" /> Zpět
-            </button>
-            <h2 className="text-4xl font-display text-center mb-16 text-surface-on">Co je vaším cílem?</h2>
-            <div className="grid md:grid-cols-2 gap-8">
+        <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+            <PrimaryProgressBar />
+            <h2 className="text-4xl font-display text-center mb-12 text-surface-on">Co je vaším cílem?</h2>
+            <div className="grid md:grid-cols-2 gap-3">
                 <button onClick={() => { setPath('prevention'); setStep(2); }} className="p-10 rounded-3xl text-left bg-surface-container-low border border-surface-outline-variant hover:border-primary transition-all hover:shadow-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-6 text-surface-container-highest group-hover:scale-110 transition-transform">
                         <Icon name="shield" size={150} />
@@ -203,67 +309,127 @@ export const FlowView = () => {
 
     // Step 2: Client details
     if (internalStep === 2) return (
-        <div className="max-w-2xl mx-auto px-4 py-12 animate-fade-in-up">
-            <button onClick={() => setStep(1)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                <Icon name="arrow_back" /> Zpět
-            </button>
-            <div className="rounded-3xl p-10 bg-surface-container-low shadow-xl border border-surface-outline-variant">
-                <h2 className="text-3xl font-display mb-8 text-center text-surface-on">O kom se bavíme?</h2>
-                <div className="space-y-8">
-                    <div className="flex p-1 rounded-2xl bg-surface-container-high">
-                        <button onClick={() => setClient({ ...client, gender: 'female' })} className={`flex-1 py-4 rounded-xl font-bold transition-all ${client.gender === 'female' ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>Žena</button>
-                        <button onClick={() => setClient({ ...client, gender: 'male' })} className={`flex-1 py-4 rounded-xl font-bold transition-all ${client.gender === 'male' ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>Muž</button>
-                    </div>
-                    <div>
-                        <div className="flex justify-between mb-3 font-bold text-surface-on-variant">
-                            <span>Věk klienta</span>
-                            <span>{client.age}+ let</span>
-                        </div>
-                        <input type="range" min="20" max="80" step="10" value={client.age} onChange={e => setClient({ ...client, age: parseInt(e.target.value) })} className="w-full h-2 rounded-lg accent-primary bg-surface-container-high appearance-none cursor-pointer" />
-                    </div>
-                    <button onClick={() => setStep(path === 'care' ? 2.5 : 3)} className="w-full py-5 rounded-2xl text-primary-on font-bold text-lg bg-primary shadow-xl hover:scale-105 transition-transform">Pokračovat</button>
+        <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+            <PrimaryProgressBar />
+            <h2 className="text-4xl font-display text-center mb-12 text-surface-on">O kom se bavíme?</h2>
+            <div className="max-w-md mx-auto space-y-8">
+                <div className="flex p-1 rounded-2xl bg-surface-container-high">
+                    <button onClick={() => setClient({ ...client, gender: 'female' })} className={`flex-1 py-4 rounded-xl font-bold transition-all ${client.gender === 'female' ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>Žena</button>
+                    <button onClick={() => setClient({ ...client, gender: 'male' })} className={`flex-1 py-4 rounded-xl font-bold transition-all ${client.gender === 'male' ? 'bg-surface text-primary shadow-sm' : 'text-surface-on-variant'}`}>Muž</button>
                 </div>
+                <div>
+                    <div className="flex justify-between mb-3 font-bold text-surface-on-variant">
+                        <span>Věk klienta</span>
+                        <span>{client.age}+ let</span>
+                    </div>
+                    <input type="range" min="20" max="80" step="10" value={client.age} onChange={e => setClient({ ...client, age: parseInt(e.target.value) })} className="w-full h-2 rounded-lg accent-primary bg-surface-container-high appearance-none cursor-pointer" />
+                </div>
+                <button onClick={() => setStep(path === 'care' ? 2.5 : 3)} className="w-full py-5 rounded-2xl text-primary-on font-bold text-lg bg-primary shadow-xl hover:scale-[1.02] transition-transform">Pokračovat</button>
             </div>
         </div>
     );
 
-    // Step 2.5: What troubles you? (Care path only)
+    // Step 2.5: What troubles you? (Care path only) - expandable symptoms
     if (internalStep === 2.5) {
+        const toggleSymptoms = (modId) => {
+            setExpandedSymptoms(prev => ({ ...prev, [modId]: !prev[modId] }));
+        };
+
         return (
-            <div className="max-w-3xl mx-auto px-4 py-12 animate-fade-in-up">
-                <button onClick={() => setStep(2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                    <Icon name="arrow_back" /> Zpět
-                </button>
-                <h2 className="text-3xl font-display mb-8 text-center text-surface-on">Co vás trápí?</h2>
-                <p className="text-center text-surface-on-variant mb-8">Vyberte oblasti, které vás zajímají. Na základě odpovědí vám doporučíme vhodné testy.</p>
-                <div className="space-y-4">
+            <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+                <PrimaryProgressBar />
+                <h2 className="text-4xl font-display text-center mb-8 text-surface-on">Co vás trápí?</h2>
+
+                {/* Dev mode switch - aligned right with cards */}
+                <div className="max-w-xl mx-auto flex justify-end items-center gap-2 mb-4">
+                    <span className="text-[10px] text-surface-on-variant">
+                        Zobrazit interní popisky
+                    </span>
+                    <button
+                        onClick={() => setDevMode(!devMode)}
+                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${devMode ? 'bg-tertiary' : 'bg-surface-container-high'
+                            }`}
+                    >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${devMode ? 'translate-x-4' : 'translate-x-0.5'
+                            }`} />
+                    </button>
+                </div>
+
+                {/* Cards container - centered */}
+                <div className="flex flex-col items-center gap-3">
                     {HEALTH_CATEGORIES.filter(c => c.module).map(cat => {
                         const mod = cat.module;
                         const isSelected = tempSelectedModules.includes(mod.id);
+                        const hasSymptoms = mod.symptoms && mod.symptoms.length > 0;
+
                         return (
-                            <div key={mod.id} onClick={() => toggleModule(mod.id)} className={`p-6 rounded-2xl border cursor-pointer transition-all flex items-center gap-6 ${isSelected ? 'bg-primary-container border-primary' : 'bg-surface-container-low border-surface-outline-variant hover:border-surface-outline'}`}>
-                                <div className={`w-6 h-6 rounded border flex items-center justify-center ${isSelected ? 'bg-primary border-primary text-primary-on' : 'border-surface-outline'}`}>
-                                    {isSelected && <Icon name="check" size={16} />}
+                            <div
+                                key={mod.id}
+                                onClick={() => toggleModule(mod.id)}
+                                className={`relative w-full min-w-[320px] max-w-xl rounded-2xl overflow-hidden transition-all cursor-pointer ${isSelected
+                                    ? 'bg-primary/20 dark:bg-primary/30 ring-2 ring-primary'
+                                    : 'bg-surface-container-low hover:bg-surface-container-high'
+                                    }`}
+                            >
+                                {/* Checkbox - top right */}
+                                <div className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center ${isSelected
+                                    ? 'bg-primary text-primary-on'
+                                    : 'border-2 border-surface-outline'
+                                    }`}>
+                                    {isSelected && <Icon name="check" size={14} />}
                                 </div>
-                                <div className="flex-1">
-                                    <div className="font-bold text-lg mb-1 flex items-center gap-2 text-surface-on">
-                                        <Icon name={cat.icon} className={isSelected ? 'text-primary' : 'text-surface-on-variant'} />{cat.title}
+
+                                <div className="p-4 pr-10">
+                                    <div className="flex items-start gap-3">
+                                        {/* Icon */}
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-primary-container' : 'bg-surface-container-high'
+                                            }`}>
+                                            <Icon name={cat.icon} size={20} className={isSelected ? 'text-primary' : 'text-surface-on-variant'} />
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-bold text-surface-on">{mod.question}</div>
+                                            {/* Internal labels - only when devMode is on */}
+                                            {devMode && (
+                                                <div className="text-surface-on-variant text-xs mt-0.5">{mod.name} • {mod.desc}</div>
+                                            )}
+
+                                            {/* Symptoms shown directly as tags */}
+                                            {hasSymptoms && (
+                                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                                    {mod.symptoms.map((symptom, i) => (
+                                                        <span
+                                                            key={i}
+                                                            className={`px-2 py-0.5 rounded-full text-xs ${isSelected
+                                                                ? 'bg-primary/30 text-primary-on dark:text-primary'
+                                                                : 'bg-surface-container-high text-surface-on-variant'
+                                                                }`}
+                                                        >
+                                                            {symptom}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="text-surface-on-variant text-sm">{mod.question}</div>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-                <button
-                    onClick={() => {
-                        processQuestionnaireAnswers(tempSelectedModules);
-                        setStep(3);
-                    }}
-                    className="w-full mt-8 py-5 rounded-2xl text-primary-on font-bold text-lg bg-primary shadow-xl"
-                >
-                    Zobrazit můj balíček
-                </button>
+
+                <div className="max-w-xl mx-auto">
+                    <button
+                        onClick={() => {
+                            processQuestionnaireAnswers(tempSelectedModules);
+                            setStep(3);
+                        }}
+                        className="w-full mt-8 py-5 rounded-2xl text-primary-on font-bold text-lg bg-primary shadow-xl hover:scale-[1.02] transition-transform"
+                    >
+                        Zobrazit můj balíček
+                    </button>
+                </div>
             </div>
         );
     }
@@ -349,28 +515,39 @@ export const FlowView = () => {
             const hasBaseContent = area.baseMarkers || area.tests;
 
             return (
-                <div className={`w-full rounded-2xl transition-all overflow-hidden ${isExpanded ? 'ring-2 ring-primary bg-primary-container/20' : 'bg-surface-container-low'}`}>
+                <div className="w-full rounded-2xl transition-all overflow-hidden bg-surface-container-low">
                     {/* Area Header */}
                     <div className="p-6">
                         <div className="flex items-start gap-4">
-                            {/* Included checkbox - always checked for cards with base content */}
-                            {hasBaseContent && (
-                                <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-tertiary text-tertiary-on shadow-sm">
-                                        <Icon name="check" size={20} />
-                                    </div>
-                                    <span className="text-xs text-tertiary font-bold">Zahrnuto</span>
-                                </div>
-                            )}
-                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${hasBaseContent ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
-                                <Icon name={area.icon} size={32} className={area.color || (hasBaseContent ? 'text-tertiary' : 'text-surface-on-variant')} />
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${hasBaseContent ? 'bg-tertiary-container' : 'bg-surface-container-high'}`}>
+                                <Icon name={area.icon} size={28} className={area.color || (hasBaseContent ? 'text-tertiary' : 'text-surface-on-variant')} />
                             </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                    <h4 className="font-bold text-2xl text-surface-on">{area.name}</h4>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium">
-                                        {totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}
-                                    </span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h4 className="font-bold text-xl text-surface-on">{area.name}</h4>
+                                        {/* Test count with expand arrow - next to title */}
+                                        {(area.baseMarkers || area.tests) && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onToggleDetails(area.id); }}
+                                                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface-container-high text-surface-on-variant font-medium hover:bg-surface-container-highest transition-colors"
+                                            >
+                                                <span>{totalCount} {totalCount === 1 ? 'test' : totalCount >= 2 && totalCount <= 4 ? 'testy' : 'testů'}</span>
+                                                <Icon name={showMarkerDetails ? 'expand_less' : 'expand_more'} size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {/* Included badge - top right */}
+                                    {hasBaseContent && (
+                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-tertiary/20 flex-shrink-0">
+                                            <div className="w-4 h-4 rounded flex items-center justify-center bg-tertiary text-tertiary-on">
+                                                <Icon name="check" size={12} />
+                                            </div>
+                                            <span className="text-xs text-tertiary font-bold">Zahrnuto</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
                                     {/* Gender segment tag */}
                                     {area.genderFilter && (
                                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${area.genderFilter === 'female'
@@ -378,87 +555,86 @@ export const FlowView = () => {
                                             : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                                             }`}>
                                             <Icon name={area.genderFilter === 'female' ? 'female' : 'male'} size={12} />
-                                            {area.genderFilter === 'female' ? 'Pro ženy' : 'Pro muže'}
+                                            {area.genderFilter === 'female' ? 'Extra pro ženy' : 'Extra pro muže'}
                                         </span>
                                     )}
                                 </div>
+
+                                {/* Marker details list - shown when expanded */}
+                                {showMarkerDetails && (
+                                    <div className="mb-3 space-y-1">
+                                        {area.baseMarkers?.map(markerId => (
+                                            <div key={markerId} className="flex items-center gap-2 text-xs text-surface-on-variant">
+                                                <Icon name="check_circle" size={14} className="text-tertiary" />
+                                                <span>{LAB_COSTS[markerId]?.name || markerId}</span>
+                                            </div>
+                                        ))}
+                                        {area.tests?.map(testId => (
+                                            <div key={testId} className="flex items-center gap-2 text-xs text-surface-on-variant">
+                                                <Icon name="check_circle" size={14} className="text-tertiary" />
+                                                <span>{testId === 'inbody' ? 'InBody měření' : testId === 'grip' ? 'Síla stisku' : testId === 'bp' ? 'Krevní tlak' : testId}</span>
+                                            </div>
+                                        ))}
+                                        {isExpanded && area.expansion?.markers?.map(markerId => (
+                                            <div key={markerId} className="flex items-center gap-2 text-xs text-primary">
+                                                <Icon name="add_circle" size={14} />
+                                                <span>{LAB_COSTS[markerId]?.name || markerId}</span>
+                                            </div>
+                                        ))}
+                                        {isExpanded && area.expansion?.tests?.map(testId => (
+                                            <div key={testId} className="flex items-center gap-2 text-xs text-primary">
+                                                <Icon name="add_circle" size={14} />
+                                                <span>{testId === 'sppb' ? 'SPPB (rovnováha, chůze)' : testId === 'chairstand' ? 'Chair-Stand test' : testId === 'ekg' ? 'EKG' : testId === 'minicog' ? 'Mini-Cog test' : testId === 'audio' ? 'Audiometrie' : testId}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <p className="text-surface-on-variant text-sm leading-relaxed">
                                     {area.baseDescription}
                                 </p>
                             </div>
                         </div>
-
-                        {/* Show details toggle */}
-                        {(area.baseMarkers || area.tests) && (
-                            <button
-                                onClick={() => onToggleDetails(area.id)}
-                                className="mt-4 flex items-center gap-2 text-xs text-surface-on-variant hover:text-primary transition-colors"
-                            >
-                                <Icon name={showMarkerDetails ? 'expand_less' : 'expand_more'} size={16} />
-                                <span>{showMarkerDetails ? 'Skrýt měřené parametry' : 'Zobrazit měřené parametry'}</span>
-                            </button>
-                        )}
-
-                        {/* Marker details list */}
-                        {showMarkerDetails && (
-                            <div className="mt-3 pl-4 border-l-2 border-surface-outline-variant space-y-1">
-                                {area.baseMarkers?.map(markerId => (
-                                    <div key={markerId} className="flex items-center gap-2 text-xs text-surface-on-variant">
-                                        <Icon name="check_circle" size={14} className="text-tertiary" />
-                                        <span>{LAB_COSTS[markerId]?.name || markerId}</span>
-                                    </div>
-                                ))}
-                                {area.tests?.map(testId => (
-                                    <div key={testId} className="flex items-center gap-2 text-xs text-surface-on-variant">
-                                        <Icon name="check_circle" size={14} className="text-tertiary" />
-                                        <span>{testId === 'inbody' ? 'InBody měření' : testId === 'grip' ? 'Síla stisku' : testId === 'bp' ? 'Krevní tlak' : testId}</span>
-                                    </div>
-                                ))}
-                                {isExpanded && area.expansion?.markers?.map(markerId => (
-                                    <div key={markerId} className="flex items-center gap-2 text-xs text-primary">
-                                        <Icon name="add_circle" size={14} />
-                                        <span>{LAB_COSTS[markerId]?.name || markerId}</span>
-                                    </div>
-                                ))}
-                                {isExpanded && area.expansion?.tests?.map(testId => (
-                                    <div key={testId} className="flex items-center gap-2 text-xs text-primary">
-                                        <Icon name="add_circle" size={14} />
-                                        <span>{testId === 'sppb' ? 'SPPB (rovnováha, chůze)' : testId === 'chairstand' ? 'Chair-Stand test' : testId === 'ekg' ? 'EKG' : testId === 'minicog' ? 'Mini-Cog test' : testId === 'audio' ? 'Audiometrie' : testId}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
-                    {/* Expansion Toggle - only for cards with base content */}
+                    {/* Expansion Toggle - compact single line with checkbox */}
                     {area.expansion && (
                         <div
                             onClick={() => onToggleExpansion(area.id)}
-                            className={`px-6 py-4 border-t cursor-pointer transition-all ${isExpanded
-                                ? 'bg-primary-container border-primary/30'
-                                : 'bg-surface-dim border-surface-outline-variant hover:bg-surface-container-high'}`}
+                            className={`px-4 py-3 border-t cursor-pointer transition-all ${isExpanded
+                                ? 'bg-primary/15 dark:bg-primary/25 border-primary/30'
+                                : 'bg-surface-dim/50 border-surface-outline-variant hover:bg-surface-container-high'}`}
                         >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-6 h-6 rounded flex items-center justify-center ${isExpanded ? 'bg-primary text-primary-on' : 'border-2 border-surface-outline'}`}>
-                                        {isExpanded && <Icon name="check" size={16} />}
+                            <div className="flex items-center gap-3">
+                                {/* Checkbox */}
+                                <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all ${isExpanded
+                                    ? 'bg-primary text-primary-on'
+                                    : 'border-2 border-surface-outline hover:border-primary'
+                                    }`}>
+                                    {isExpanded && <Icon name="check" size={14} />}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className={`font-semibold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
+                                            {area.expansion.name}
+                                        </span>
+                                        <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container-high text-surface-on-variant">
+                                            +{expansionCount} {expansionCount === 1 ? 'test' : 'testy'}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={`font-bold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
-                                                {area.expansion.name}
-                                            </span>
-                                            <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container-high text-surface-on-variant">
-                                                +{expansionCount} {expansionCount === 1 ? 'test' : 'testy'}
-                                            </span>
-                                        </div>
-                                        <div className="text-xs text-surface-on-variant mt-0.5">
+                                    {/* Description only shows when selected */}
+                                    {isExpanded && (
+                                        <div className="text-xs mt-1 text-surface-on-variant">
                                             {area.expansion.description}
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
+
+                                {/* Price */}
                                 {expansionPrice > 0 && (
-                                    <div className={`text-sm font-bold ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
+                                    <div className={`text-sm font-bold flex-shrink-0 ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
                                         +{expansionPrice} Kč
                                     </div>
                                 )}
@@ -494,49 +670,62 @@ export const FlowView = () => {
             return sum;
         }, 0);
 
-        // Step progress indicator
+        // Step config for tabs (without Souhrn)
         const stepConfig = [
-            { step: 3.1, label: 'Krev', icon: 'bloodtype', color: 'text-red-500' },
-            { step: 3.2, label: 'Tělo', icon: 'accessibility_new', color: 'text-teal-500' },
-            { step: 3.3, label: 'Hlava', icon: 'psychology', color: 'text-violet-500' },
-            { step: 3.4, label: 'Souhrn', icon: 'receipt_long', color: 'text-primary' }
+            { step: 3.1, label: 'Krev', icon: 'bloodtype', color: 'text-red-500', count: bloodTestCount },
+            { step: 3.2, label: 'Tělo', icon: 'accessibility_new', color: 'text-teal-500', count: bodyTestCount },
+            { step: 3.3, label: 'Hlava', icon: 'psychology', color: 'text-violet-500', count: headTestCount },
         ];
 
-        const StepProgress = () => (
-            <div className="sticky top-0 z-40 bg-surface/95 backdrop-blur-sm py-4 -mx-4 px-4 mb-8">
-                <div className="flex items-center justify-center gap-2">
-                    {stepConfig.map((s, i) => (
-                        <React.Fragment key={s.step}>
-                            <button
-                                onClick={() => internalStep >= s.step && setStep(s.step)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${internalStep === s.step
-                                    ? 'bg-primary text-primary-on font-bold ring-2 ring-primary ring-offset-2 ring-offset-surface'
-                                    : internalStep > s.step
-                                        ? 'bg-tertiary-container text-tertiary cursor-pointer hover:bg-tertiary/20'
-                                        : 'bg-surface-container-high text-surface-on-variant'
-                                    }`}
-                                disabled={internalStep < s.step}
-                            >
-                                <Icon name={internalStep > s.step ? 'check_circle' : s.icon} size={18} className={internalStep === s.step ? '' : s.color} />
-                                <span className="text-sm">{s.label}</span>
-                            </button>
-                            {i < stepConfig.length - 1 && (
-                                <Icon name="chevron_right" size={20} className="text-surface-on-variant" />
-                            )}
-                        </React.Fragment>
-                    ))}
+        const StepProgress = () => {
+            // Find active index for positioning
+            const activeIndex = stepConfig.findIndex(s =>
+                internalStep === s.step || (s.step === 3.1 && internalStep === 3)
+            );
+
+            return (
+                <div className="py-3 mb-6">
+                    {/* Primary progress bar */}
+                    <PrimaryProgressBar />
+                    {/* Secondary tabs - segmented control style + Dev toggle */}
+                    <div className="flex justify-center items-center gap-4">
+                        <div className="relative inline-flex p-1 rounded-full bg-primary/10 dark:bg-primary/20">
+                            {/* Sliding background indicator */}
+                            <div
+                                className="absolute top-1 bottom-1 rounded-full bg-surface dark:bg-surface-container-highest transition-all duration-300 ease-out shadow-sm"
+                                style={{
+                                    width: `calc(${100 / stepConfig.length}% - 4px)`,
+                                    left: `calc(${(activeIndex / stepConfig.length) * 100}% + 2px)`,
+                                }}
+                            />
+                            {/* Tab buttons */}
+                            {stepConfig.map((s) => {
+                                const isActive = internalStep === s.step || (s.step === 3.1 && internalStep === 3);
+
+                                return (
+                                    <button
+                                        key={s.step}
+                                        onClick={() => setStep(s.step)}
+                                        className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-full transition-colors ${isActive
+                                            ? 'text-surface-on'
+                                            : 'text-surface-on-variant hover:text-surface-on'
+                                            }`}
+                                    >
+                                        <Icon name={s.icon} size={16} className={s.color} />
+                                        <span className="text-sm font-medium">{s.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        };
 
         // Step 3.1: Krev
         if (internalStep === 3 || internalStep === 3.1) {
             return (
-                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
-                    <button onClick={() => setStep(path === 'care' ? 2.5 : 2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                        <Icon name="arrow_back" /> Zpět
-                    </button>
-
+                <div className="max-w-6xl mx-auto px-4 py-4 animate-fade-in-up">
                     <StepProgress />
 
                     <div className="text-center mb-10">
@@ -544,14 +733,14 @@ export const FlowView = () => {
                             <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                                 <Icon name="bloodtype" size={32} className="text-red-500" />
                             </div>
-                            <h2 className="text-3xl font-display text-surface-on">Krevní testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Krevní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Základní i rozšířené krevní markery odhalující stav vašeho zdraví. Každou sekci můžete rozšířit o detailnější vyšetření.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
+                    <div className="grid md:grid-cols-2 gap-3 mb-8">
                         {BLOOD_AREAS.map(area => {
                             if (area.genderFilter && area.genderFilter !== client.gender) return null;
                             return (
@@ -567,11 +756,7 @@ export const FlowView = () => {
                         })}
                     </div>
 
-                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
-                        <div className="text-surface-on-variant">
-                            <span className="text-sm">Vybrané krevní testy:</span>
-                            <span className="ml-2 font-bold text-surface-on">{bloodTestCount}</span>
-                        </div>
+                    <div className="flex justify-end pt-6 border-t border-surface-outline-variant">
                         <button onClick={() => setStep(3.2)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
                             Pokračovat <Icon name="arrow_forward" />
                         </button>
@@ -583,11 +768,7 @@ export const FlowView = () => {
         // Step 3.2: Tělo
         if (internalStep === 3.2) {
             return (
-                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
-                    <button onClick={() => setStep(3.1)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                        <Icon name="arrow_back" /> Zpět na Krev
-                    </button>
-
+                <div className="max-w-6xl mx-auto px-4 py-4 animate-fade-in-up">
                     <StepProgress />
 
                     <div className="text-center mb-10">
@@ -595,14 +776,14 @@ export const FlowView = () => {
                             <div className="w-16 h-16 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
                                 <Icon name="accessibility_new" size={32} className="text-teal-500" />
                             </div>
-                            <h2 className="text-3xl font-display text-surface-on">Fyzické testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Fyzické testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Měření tělesných funkcí a fyzické kondice. Základní měření jsou v ceně, rozšíření jsou volitelná.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
+                    <div className="grid md:grid-cols-2 gap-3 mb-8">
                         {BODY_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
@@ -616,11 +797,7 @@ export const FlowView = () => {
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
-                        <div className="text-surface-on-variant">
-                            <span className="text-sm">Vybrané fyzické testy:</span>
-                            <span className="ml-2 font-bold text-surface-on">{bodyTestCount}</span>
-                        </div>
+                    <div className="flex justify-end pt-6 border-t border-surface-outline-variant">
                         <button onClick={() => setStep(3.3)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
                             Pokračovat <Icon name="arrow_forward" />
                         </button>
@@ -632,11 +809,7 @@ export const FlowView = () => {
         // Step 3.3: Hlava
         if (internalStep === 3.3) {
             return (
-                <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
-                    <button onClick={() => setStep(3.2)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                        <Icon name="arrow_back" /> Zpět na Tělo
-                    </button>
-
+                <div className="max-w-6xl mx-auto px-4 py-4 animate-fade-in-up">
                     <StepProgress />
 
                     <div className="text-center mb-10">
@@ -644,14 +817,14 @@ export const FlowView = () => {
                             <div className="w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
                                 <Icon name="psychology" size={32} className="text-violet-500" />
                             </div>
-                            <h2 className="text-3xl font-display text-surface-on">Kognitivní testy</h2>
+                            <h2 className="text-5xl font-display text-surface-on">Kognitivní testy</h2>
                         </div>
                         <p className="text-surface-on-variant text-lg max-w-2xl mx-auto">
                             Volitelné testy paměti, myšlení a smyslů. Tyto testy nejsou v základu zahrnuty – přidejte je, pokud máte zájem.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4 mb-8 place-items-center">
+                    <div className="flex flex-wrap justify-center gap-3 mb-8">
                         {HEAD_AREAS.filter(a => !a.hidden).map(area => (
                             <AreaCard
                                 key={area.id}
@@ -665,11 +838,7 @@ export const FlowView = () => {
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-center pt-6 border-t border-surface-outline-variant">
-                        <div className="text-surface-on-variant">
-                            <span className="text-sm">Vybrané kognitivní testy:</span>
-                            <span className="ml-2 font-bold text-surface-on">{headTestCount}</span>
-                        </div>
+                    <div className="flex justify-end pt-6 border-t border-surface-outline-variant">
                         <button onClick={() => setStep(3.4)} className="px-8 py-4 rounded-xl bg-primary text-primary-on font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
                             Pokračovat na Souhrn <Icon name="arrow_forward" />
                         </button>
@@ -681,12 +850,11 @@ export const FlowView = () => {
         // Step 3.4: Souhrn (with tabs for editing)
         if (internalStep === 3.4) {
             return (
-                <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up">
-                    <button onClick={() => setStep(3.3)} className="mb-8 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-opacity">
-                        <Icon name="arrow_back" /> Zpět na Hlava
+                <div className="max-w-7xl mx-auto px-4 py-4 animate-fade-in-up">
+                    {/* Back button instead of navigation to save space */}
+                    <button onClick={() => setStep(3.3)} className="mb-4 flex items-center gap-2 text-surface-on-variant hover:text-surface-on transition-colors">
+                        <Icon name="arrow_back" size={20} /> Zpět na výběr
                     </button>
-
-                    <StepProgress />
 
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Main content */}
@@ -707,15 +875,12 @@ export const FlowView = () => {
                                     >
                                         <Icon name={tab.icon} className={activeTab === tab.id ? tab.color : ''} />
                                         <span>{tab.label}</span>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-primary-container text-primary' : 'bg-surface-container text-surface-on-variant'}`}>
-                                            {tab.id === 'blood' ? bloodTestCount : tab.id === 'body' ? bodyTestCount : headTestCount}
-                                        </span>
                                     </button>
                                 ))}
                             </div>
 
                             {/* Tab Content */}
-                            <div className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-3">
                                 {activeTab === 'blood' && (
                                     <>
                                         {BLOOD_AREAS.map(area => {
@@ -736,7 +901,7 @@ export const FlowView = () => {
 
                                 {activeTab === 'body' && (
                                     <>
-                                        {BODY_AREAS.map(area => (
+                                        {BODY_AREAS.filter(a => !a.hidden).map(area => (
                                             <AreaCard
                                                 key={area.id}
                                                 area={area}
@@ -752,7 +917,7 @@ export const FlowView = () => {
 
                                 {activeTab === 'head' && (
                                     <>
-                                        {HEAD_AREAS.map(area => (
+                                        {HEAD_AREAS.filter(a => !a.hidden).map(area => (
                                             <AreaCard
                                                 key={area.id}
                                                 area={area}
@@ -819,104 +984,161 @@ export const FlowView = () => {
                                     )}
                                 </div>
 
-                                {/* What's included */}
-                                <div className="space-y-3 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
-                                    <h4 className="text-xs uppercase tracking-wider text-surface-on-variant font-bold mb-3">Co je zahrnuto</h4>
+                                {/* What's included - Alternative Variant */}
+                                {isAltVariant ? (
+                                    <div className="space-y-4 mb-6 pb-6 border-b border-surface-outline-variant">
+                                        {/* Visual grid layout */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {/* Visits card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary-container to-primary-container/50 text-center">
+                                                <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-primary/20 flex items-center justify-center">
+                                                    <Icon name="medical_services" size={24} className="text-primary" />
+                                                </div>
+                                                <div className="text-2xl font-bold text-primary">{frequency.multiplier}×</div>
+                                                <div className="text-xs text-surface-on-variant">Návštěvy sestry</div>
+                                            </div>
 
-                                    {/* Visits */}
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
-                                            <Icon name="home_health" size={16} className="text-primary" />
+                                            {/* Blood tests card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-50 dark:from-red-900/30 dark:to-red-900/10 text-center">
+                                                <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-red-500/20 flex items-center justify-center">
+                                                    <Icon name="bloodtype" size={24} className="text-red-500" />
+                                                </div>
+                                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{bloodTestCount}</div>
+                                                <div className="text-xs text-surface-on-variant">Biomarkerů</div>
+                                            </div>
+
+                                            {/* Body composition card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/30 dark:to-teal-900/10 text-center">
+                                                <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                                                    <Icon name="scale" size={24} className="text-teal-500" />
+                                                </div>
+                                                <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">{frequency.multiplier}×</div>
+                                                <div className="text-xs text-surface-on-variant">Analýza těla</div>
+                                            </div>
+
+                                            {/* AI card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-100 to-violet-50 dark:from-violet-900/30 dark:to-violet-900/10 text-center">
+                                                <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                                                    <Icon name="auto_awesome" size={24} className="text-violet-500" />
+                                                </div>
+                                                <div className="text-lg font-bold text-violet-600 dark:text-violet-400">AI</div>
+                                                <div className="text-xs text-surface-on-variant">Interpretace</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="font-bold text-surface-on">{frequency.multiplier}× návštěvy</span>
-                                            <span className="text-surface-on-variant"> zdravotní sestry</span>
+
+                                        {/* Additional services as pills */}
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium flex items-center gap-1">
+                                                <Icon name="trending_up" size={12} /> Sledování v čase
+                                            </span>
+                                            <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium flex items-center gap-1">
+                                                <Icon name="share" size={12} /> Sdílení s lékařem
+                                            </span>
+                                            <span className="px-3 py-1 rounded-full bg-surface-container-high text-surface-on-variant text-xs font-medium flex items-center gap-1 opacity-60">
+                                                <Icon name="stethoscope" size={12} /> Konzultace (volitelně)
+                                            </span>
                                         </div>
                                     </div>
+                                ) : (
+                                    /* Original layout */
+                                    <div className="space-y-3 mb-6 pb-6 border-b border-surface-outline-variant text-sm">
+                                        <h4 className="text-xs uppercase tracking-wider text-surface-on-variant font-bold mb-3">Co je zahrnuto</h4>
 
-                                    {/* Blood draws */}
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                                            <Icon name="bloodtype" size={16} className="text-red-500" />
+                                        {/* Visits */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
+                                                <Icon name="medical_services" size={16} className="text-primary" />
+                                            </div>
+                                            <div>
+                                                <span className="font-bold text-surface-on">{frequency.multiplier}× návštěvy</span>
+                                                <span className="text-surface-on-variant"> zdravotní sestry</span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="font-bold text-surface-on">{frequency.multiplier}× Krevní odběr</span>
-                                            <span className="text-surface-on-variant"> s analýzou {bloodTestCount} biomarkerů</span>
+
+                                        {/* Blood draws */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Icon name="bloodtype" size={16} className="text-red-500" />
+                                            </div>
+                                            <div>
+                                                <span className="font-bold text-surface-on">{frequency.multiplier}× Krevní odběr</span>
+                                                <span className="text-surface-on-variant"> s analýzou {bloodTestCount} biomarkerů</span>
+                                            </div>
                                         </div>
+
+                                        {/* Body composition */}
+                                        {expandedBodyAreas.includes('composition') || BODY_AREAS.find(a => a.id === 'composition')?.included ? (
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="scale" size={16} className="text-teal-500" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-surface-on">{frequency.multiplier}× Analýza složení těla</span>
+                                                    <span className="text-surface-on-variant block text-xs">(svalová hmota, viscerální tuk)</span>
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        {/* Blood pressure */}
+                                        {expandedBodyAreas.includes('strength') || BODY_AREAS.find(a => a.id === 'strength')?.included ? (
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="monitor_heart" size={16} className="text-emerald-500" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-surface-on">{frequency.multiplier}× Měření krevního tlaku</span>
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        <div className="border-t border-surface-outline-variant pt-3 mt-3 space-y-3">
+                                            {/* AI interpretation */}
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="auto_awesome" size={16} className="text-violet-500" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-surface-on">AI interpretace výsledků</span>
+                                                    <span className="text-surface-on-variant block text-xs">Personalizovaná doporučení</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Health tracking */}
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="trending_up" size={16} className="text-blue-500" />
+                                                </div>
+                                                <span className="text-surface-on">Sledování vývoje zdraví v čase</span>
+                                            </div>
+
+                                            {/* Share with doctor */}
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="share" size={16} className="text-amber-500" />
+                                                </div>
+                                                <span className="text-surface-on">Sdílení zprávy s lékařem</span>
+                                            </div>
+
+                                            {/* Consultation (optional) */}
+                                            <div className="flex items-start gap-3 opacity-60">
+                                                <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                                                    <Icon name="stethoscope" size={16} className="text-surface-on-variant" />
+                                                </div>
+                                                <div>
+                                                    <span className="text-surface-on">Konzultace s lékařem</span>
+                                                    <span className="text-surface-on-variant block text-xs">Volitelně za příplatek</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {frequency.discount > 0 && (
+                                            <div className="flex justify-between text-tertiary pt-2">
+                                                <span>Sleva za frekvenci</span>
+                                                <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
+                                            </div>
+                                        )}
                                     </div>
-
-                                    {/* Body composition */}
-                                    {expandedBodyAreas.includes('composition') || BODY_AREAS.find(a => a.id === 'composition')?.included ? (
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Icon name="scale" size={16} className="text-teal-500" />
-                                            </div>
-                                            <div>
-                                                <span className="font-bold text-surface-on">{frequency.multiplier}× Analýza složení těla</span>
-                                                <span className="text-surface-on-variant block text-xs">(svalová hmota, viscerální tuk)</span>
-                                            </div>
-                                        </div>
-                                    ) : null}
-
-                                    {/* Blood pressure */}
-                                    {expandedBodyAreas.includes('strength') || BODY_AREAS.find(a => a.id === 'strength')?.included ? (
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Icon name="monitor_heart" size={16} className="text-emerald-500" />
-                                            </div>
-                                            <div>
-                                                <span className="font-bold text-surface-on">{frequency.multiplier}× Měření krevního tlaku</span>
-                                            </div>
-                                        </div>
-                                    ) : null}
-
-                                    <div className="border-t border-surface-outline-variant pt-3 mt-3 space-y-3">
-                                        {/* AI interpretation */}
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Icon name="auto_awesome" size={16} className="text-violet-500" />
-                                            </div>
-                                            <div>
-                                                <span className="font-bold text-surface-on">AI interpretace výsledků</span>
-                                                <span className="text-surface-on-variant block text-xs">Personalizovaná doporučení</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Health tracking */}
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Icon name="trending_up" size={16} className="text-blue-500" />
-                                            </div>
-                                            <span className="text-surface-on">Sledování vývoje zdraví v čase</span>
-                                        </div>
-
-                                        {/* Share with doctor */}
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Icon name="share" size={16} className="text-amber-500" />
-                                            </div>
-                                            <span className="text-surface-on">Sdílení zprávy s lékařem</span>
-                                        </div>
-
-                                        {/* Consultation (optional) */}
-                                        <div className="flex items-start gap-3 opacity-60">
-                                            <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0">
-                                                <Icon name="stethoscope" size={16} className="text-surface-on-variant" />
-                                            </div>
-                                            <div>
-                                                <span className="text-surface-on">Konzultace s lékařem</span>
-                                                <span className="text-surface-on-variant block text-xs">Volitelně za příplatek</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {frequency.discount > 0 && (
-                                        <div className="flex justify-between text-tertiary pt-2">
-                                            <span>Sleva za frekvenci</span>
-                                            <span className="font-bold">-{Math.round(frequency.discount * 100)}%</span>
-                                        </div>
-                                    )}
-                                </div>
+                                )}
 
                                 {/* Frequency selector */}
                                 <div className="flex p-1 rounded-xl bg-surface-container-high mb-6">

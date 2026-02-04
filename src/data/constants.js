@@ -78,36 +78,121 @@ export const HEALTH_CATEGORIES = [
     {
         id: 'heart', title: 'Srdce a cévy', icon: 'favorite',
         base: ['chol', 'hdl', 'ldl', 'tri'],
-        module: { id: 'cardio', name: 'Kardio Plus', desc: 'ApoB + Homocystein', markers: ['apob', 'homocystein'], question: 'Máte v rodině srdeční onemocnění nebo cítíte bušení srdce?' }
+        module: {
+            id: 'cardio',
+            name: 'Kardio Plus',
+            desc: 'ApoB + Homocystein',
+            markers: ['apob', 'homocystein'],
+            question: 'Máte v rodině srdeční onemocnění?',
+            symptoms: ['Bušení srdce', 'Bolesti na hrudi', 'Dušnost při námaze', 'Vysoký tlak']
+        }
     },
     {
         id: 'diabetes', title: 'Metabolismus cukrů (Diabetes)', icon: 'cookie',
         base: ['gluk'],
-        module: { id: 'diabetes', name: 'Diabetes Komplet', desc: 'HbA1c + C-Peptid', markers: ['hba1c', 'cpeptid'], question: 'Máte nadváhu, žízeň nebo výkyvy energie po jídle?' }
+        module: {
+            id: 'diabetes',
+            name: 'Diabetes Komplet',
+            desc: 'HbA1c + C-Peptid',
+            markers: ['hba1c', 'cpeptid'],
+            question: 'Máte obavy z cukrovky?',
+            symptoms: ['Nadváha', 'Velká žízeň', 'Časté močení', 'Výkyvy energie po jídle']
+        }
     },
     {
         id: 'liver', title: 'Játra a slinivka', icon: 'water_drop',
         base: ['alt', 'ast', 'ggt', 'ams'],
-        module: { id: 'liver', name: 'Játra Plus', desc: 'Bilirubin + ALP', markers: ['bilirubin', 'alp'], question: 'Chcete detailněji zkontrolovat játra (léky, alkohol)?' }
+        module: {
+            id: 'liver',
+            name: 'Játra Plus',
+            desc: 'Bilirubin + ALP',
+            markers: ['bilirubin', 'alp'],
+            question: 'Chcete zkontrolovat játra podrobněji?',
+            symptoms: ['Pravidelný alkohol', 'Užívání léků', 'Bolesti břicha', 'Zažívací potíže']
+        }
     },
-    { id: 'kidney', title: 'Ledviny', icon: 'water', base: ['krea', 'urea', 'moc', 'acr'], module: null },
+    {
+        id: 'kidney', title: 'Ledviny', icon: 'water',
+        base: ['krea', 'urea', 'moc'],
+        module: {
+            id: 'kidney',
+            name: 'Ledviny Plus',
+            desc: 'ACR - časná detekce',
+            markers: ['acr'],
+            question: 'Máte obavy o zdraví ledvin?',
+            symptoms: ['Otoky nohou', 'Problémy s močením', 'Vysoký tlak', 'Diabetes v rodině'],
+            targetArea: 'kidney'
+        }
+    },
     {
         id: 'minerals', title: 'Hladina minerálů a vitamínů', icon: 'wb_sunny',
         base: ['mg'],
-        module: { id: 'vitamins', name: 'Vitalita & Imunita', desc: 'Vit D, B12, Folát, Zinek', markers: ['vitD', 'vitB12', 'folat', 'zinek'], question: 'Cítíte se dlouhodobě unavení nebo bez energie?' }
+        module: {
+            id: 'vitamins',
+            name: 'Vitalita & Imunita',
+            desc: 'Vit D, B12, Folát, Zinek',
+            markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
+            question: 'Cítíte se trvale unavení?',
+            symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty']
+        }
     },
     {
-        id: 'immunity', title: 'Imunitní systém (Zánětlivost)', icon: 'bloodtype',
+        id: 'immunity', title: 'Záněty a imunita', icon: 'bloodtype',
         base: ['ko', 'crp', 'bilkovina'],
-        module: { id: 'iron', name: 'Zásoby železa', desc: 'Ferritin', markers: ['ferritin'], question: 'Zadýcháváte se nebo se cítíte bledí?' }
+        module: {
+            id: 'inflammation',
+            name: 'Imunitní profil',
+            desc: 'Detailní krevní obraz',
+            markers: ['ko', 'bilkovina', 'ferritin'],
+            question: 'Máte časté infekce nebo záněty?',
+            symptoms: ['Časté nachlazení', 'Pomalé hojení ran', 'Opakované infekce', 'Zvýšená teplota'],
+            targetArea: 'inflammation'
+        }
     },
     {
         id: 'thyroid', title: 'Štítná žláza', icon: 'psychology',
         base: ['tsh'],
-        module: { id: 'thyroid', name: 'Štítná žláza Komplet', desc: 'fT4 + Anti-TPO', markers: ['ft4', 'anti_tpo'], question: 'Pozorujete změny váhy, padání vlasů nebo nervozitu?' }
+        module: {
+            id: 'thyroid',
+            name: 'Štítná žláza Komplet',
+            desc: 'fT4 + Anti-TPO',
+            markers: ['ft4', 'anti_tpo'],
+            question: 'Máte problémy se štítnou žlázou?',
+            symptoms: ['Změny váhy', 'Padání vlasů', 'Nervozita', 'Citlivost na chlad/teplo']
+        }
     },
     { id: 'bones', title: 'Kosti a zuby', icon: 'health_and_safety', base: ['ca'], module: null },
-    { id: 'prostate', title: 'Prostata (Muži)', icon: 'male', base: ['psa'], module: null }
+    { id: 'prostate', title: 'Prostata (Muži)', icon: 'male', base: ['psa'], module: null },
+    // New: Physical/Body tests
+    {
+        id: 'mobility', title: 'Pohyblivost a rovnováha', icon: 'accessibility_new',
+        base: [],
+        module: {
+            id: 'mobility',
+            name: 'SPPB testy',
+            desc: 'Rovnováha, chůze, síla nohou',
+            markers: [],
+            question: 'Máte problémy s chůzí nebo rovnováhou?',
+            symptoms: ['Nejistá chůze', 'Strach z pádu', 'Slabost v nohách', 'Závratě'],
+            targetType: 'body',
+            targetArea: 'mobility'
+        }
+    },
+    // New: Cognitive tests
+    {
+        id: 'memory', title: 'Paměť a myšlení', icon: 'psychology_alt',
+        base: [],
+        module: {
+            id: 'memory',
+            name: 'Mini-Cog test',
+            desc: 'Screening paměti',
+            markers: [],
+            question: 'Trápí vás zapomnětlivost?',
+            symptoms: ['Zapomínání jmen', 'Hledání slov', 'Ztráta orientace', 'Problémy s koncentrací'],
+            targetType: 'head',
+            targetArea: 'memory'
+        }
+    }
 ];
 
 export const FREQUENCIES = [
