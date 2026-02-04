@@ -294,7 +294,7 @@ export const BLOOD_AREAS = [
         icon: 'bolt',
         color: 'text-yellow-500',
         baseDescription: 'Kontrolujeme vitamíny a minerály klíčové pro energii. Únava často není ve vaší hlavě, ale v krvi.',
-        baseMarkers: ['mg'],
+        baseMarkers: ['mg', 'ko'],
         expansion: {
             name: 'Rozšířit o kompletní vitamíny',
             description: 'Přidáme D vitamin (imunita, kosti), B12 (nervy, paměť), folát a železo. Kompletní obraz vaší vitality.',
@@ -307,11 +307,11 @@ export const BLOOD_AREAS = [
         icon: 'local_fire_department',
         color: 'text-orange-500',
         baseDescription: 'Měříme CRP - univerzální ukazatel zánětu. Chronický zánět urychluje stárnutí a způsobuje nemoci.',
-        baseMarkers: ['crp'],
+        baseMarkers: ['crp', 'ko'],
         expansion: {
             name: 'Rozšířit o imunitní profil',
-            description: 'Přidáme detailní krevní obraz a bílkoviny. Vidíme, jak silný je váš imunitní systém.',
-            markers: ['ko', 'bilkovina'],
+            description: 'Přidáme celkovou bílkovinu. Vidíme, jak silný je váš imunitní systém.',
+            markers: ['bilkovina'],
         }
     },
     {
