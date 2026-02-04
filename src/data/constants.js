@@ -320,11 +320,11 @@ export const BLOOD_AREAS = [
         icon: 'cookie',
         color: 'text-pink-500',
         baseDescription: 'Měříme hladinu cukru v krvi. Včasné odhalení prediabetu může zabránit rozvoji cukrovky.',
-        baseMarkers: ['gluk'],
+        baseMarkers: ['gluk', 'hba1c'],
         expansion: {
-            name: 'Rozšířit o dlouhodobý cukr',
-            description: 'Přidáme HbA1c (průměr cukru za 3 měsíce) a C-peptid (funkce slinivky). Kompletní obraz metabolismu.',
-            markers: ['hba1c', 'cpeptid'],
+            name: 'Rozšířit o detailní metabolismus',
+            description: 'Přidáme C-peptid pro zjištění funkce slinivky. Kompletní obraz metabolismu.',
+            markers: ['cpeptid'],
         }
     },
     {
