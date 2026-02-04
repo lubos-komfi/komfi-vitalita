@@ -90,7 +90,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'obesity',
             name: 'Metabolický profil',
-            desc: 'Inzulín + HOMA-IR + HbA1c + Cholesterol + Triglyceridy',
+            desc: 'Inzulín, HOMA-IR, HbA1c (Dlouhý cukr), Cholesterol celkový, Triacylglyceroly',
             markers: ['inzulin', 'homair', 'hba1c', 'chol', 'tri'],
             question: 'Trápí vás nadváha nebo obezita?',
             symptoms: ['BMI nad 25', 'Tuk v oblasti břicha', 'Únava po jídle', 'Problémy s hubnutím']
@@ -103,7 +103,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'cardio',
             name: 'Kardio Plus',
-            desc: 'ApoB + Homocystein',
+            desc: 'Apolipoprotein B, Homocystein',
             markers: ['apob', 'homocystein'],
             question: 'Máte v rodině srdeční onemocnění?',
             symptoms: ['Bušení srdce', 'Bolesti na hrudi', 'Dušnost při námaze', 'Vysoký tlak']
@@ -116,7 +116,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'diabetes',
             name: 'Diabetes Komplet',
-            desc: 'HbA1c + C-Peptid',
+            desc: 'HbA1c (Dlouhý cukr), C-Peptid',
             markers: ['hba1c', 'cpeptid'],
             question: 'Máte obavy z cukrovky?',
             symptoms: ['Nadváha', 'Velká žízeň', 'Časté močení', 'Výkyvy energie po jídle']
@@ -129,7 +129,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'liver',
             name: 'Játra Plus',
-            desc: 'Bilirubin + ALP',
+            desc: 'Bilirubin celkový, ALP (Játra/Kosti)',
             markers: ['bilirubin', 'alp'],
             question: 'Chcete zkontrolovat játra podrobněji?',
             symptoms: ['Pravidelný alkohol', 'Užívání léků', 'Bolesti břicha', 'Zažívací potíže']
@@ -142,7 +142,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'kidney',
             name: 'Ledviny Plus',
-            desc: 'ACR - časná detekce',
+            desc: 'ACR (Albumin/Kreatinin v moči)',
             markers: ['acr'],
             question: 'Máte obavy o zdraví ledvin?',
             symptoms: ['Otoky nohou', 'Problémy s močením', 'Vysoký tlak', 'Diabetes v rodině'],
@@ -156,7 +156,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'vitamins',
             name: 'Vitalita & Imunita',
-            desc: 'Vit D + B12 + Folát + Ferritin',
+            desc: 'Vitamín D, Vitamín B12, Folát (Kys. listová), Ferritin (Zásoba železa)',
             markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
             question: 'Cítíte se trvale unavení?',
             symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty']
@@ -169,7 +169,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'inflammation',
             name: 'Imunitní profil',
-            desc: 'Krevní obraz + Bílkovina + Ferritin',
+            desc: 'Krevní obraz + diferenciál, Celková bílkovina, Ferritin (Zásoba železa)',
             markers: ['ko', 'bilkovina', 'ferritin'],
             question: 'Máte časté infekce nebo záněty?',
             symptoms: ['Časté nachlazení', 'Pomalé hojení ran', 'Opakované infekce', 'Zvýšená teplota'],
@@ -183,7 +183,7 @@ export const HEALTH_CATEGORIES = [
         module: {
             id: 'thyroid',
             name: 'Štítná žláza Komplet',
-            desc: 'fT4 + Anti-TPO',
+            desc: 'fT4 (Volný tyroxin), Anti-TPO (Autoimunita)',
             markers: ['ft4', 'anti_tpo'],
             question: 'Máte problémy se štítnou žlázou?',
             symptoms: ['Změny váhy', 'Padání vlasů', 'Nervozita', 'Citlivost na chlad/teplo']
