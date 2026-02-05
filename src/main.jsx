@@ -4,10 +4,6 @@ import { HashRouter, Routes, Route, NavLink, useNavigate, useLocation } from 're
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { ThemeToggle } from './components/ui';
 import { HomeView } from './views/HomeView';
-// Note: We are keeping direct imports for now to avoid specific lazy loading issues with named exports if not handled perfectly, 
-// but usually React.lazy supports it if we map it. 
-// Actually implementation plan said lazy loading.
-// Let's do it properly.
 
 import './index.css';
 
@@ -36,7 +32,7 @@ const AppLayout = () => {
     { path: '/flow', label: 'Simulace objednávky', icon: 'add_circle' },
     { path: '/competition', label: 'Konkurence', icon: 'compare_arrows' },
     { path: '/measurements', label: 'Měření', icon: 'monitor_heart', hidden: true },
-    { path: '/analysis', label: 'Analýza', icon: 'analytics', hidden: true },
+    { path: '/analysis', label: 'Analýza', icon: 'analytics' },
     { path: '/margins', label: 'Kalkulačka', icon: 'calculate' }
   ];
 

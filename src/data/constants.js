@@ -7,7 +7,6 @@ export const LABS = [
 ];
 
 export const LAB_COSTS = {
-    // Struktura: { name: '...', prices: { citylab: X, euc: Y, synlab: Z, unilabs: W }, price: BEST_OFFER }
     ko: { name: 'Krevní obraz + diferenciál', prices: { citylab: 55, euc: 91, synlab: 91, unilabs: 134 }, price: 55 },
     gluk: { name: 'Glukóza v plazmě', prices: { citylab: 14, euc: 40, synlab: 49, unilabs: 44 }, price: 14 },
     crp: { name: 'CRP (Zánět)', prices: { citylab: 122, euc: 169, synlab: 141.3, unilabs: 160 }, price: 122 },
@@ -61,7 +60,7 @@ export const MARKER_AVAILABILITY = {
     tri: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     hdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     ldl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
-    nonhdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'], 
+    nonhdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     krea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd', 'm_enr'],
     urea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     bilkovina: ['m_prem', 'm_reg'],
@@ -73,7 +72,7 @@ export const MARKER_AVAILABILITY = {
     hba1c: ['m_prem', 'm_reg', 'm_enr'],
     cpeptid: ['m_prem', 'm_reg', 'm_enr'],
     inzulin: ['m_prem', 'm_reg', 'm_enr'],
-    homair: ['m_prem', 'm_reg', 'm_enr'], 
+    homair: ['m_prem', 'm_reg', 'm_enr'],
     ferritin: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitD: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitB12: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
@@ -199,7 +198,6 @@ export const HEALTH_CATEGORIES = [
     },
     { id: 'bones', title: 'Kosti a zuby', icon: 'health_and_safety', base: ['ca'], module: null },
     { id: 'prostate', title: 'Prostata (Muži)', icon: 'male', base: ['psa'], module: null },
-    // New: Physical/Body tests
     {
         id: 'mobility', title: 'Pohyblivost a rovnováha', icon: 'accessibility_new',
         base: [],
@@ -215,7 +213,6 @@ export const HEALTH_CATEGORIES = [
             targetArea: 'mobility'
         }
     },
-    // New: Cognitive tests
     {
         id: 'memory', title: 'Paměť a myšlení', icon: 'psychology_alt',
         base: [],
@@ -243,34 +240,27 @@ export const PROFILES_SPEC = {
     prevence: {
         name: 'Prevence',
         icon: 'shield',
-        color: '#22c55e', // Green
+        color: '#22c55e',
         price: 2990,
         base: ['ko', 'gluk', 'moc', 'chol', 'hdl', 'ldl', 'tri', 'alt', 'ast', 'krea', 'vitD']
     },
     rovnovaha: {
         name: 'Rovnováha',
         icon: 'balance',
-        color: '#3b82f6', // Blue
+        color: '#3b82f6',
         price: 3490,
         base: ['ko', 'gluk', 'moc', 'chol', 'hdl', 'ldl', 'tri', 'alt', 'ast', 'ggt', 'krea', 'urea', 'tsh', 'ferritin', 'vitB12', 'mg']
     },
     krehkost: {
         name: 'Péče',
         icon: 'local_hospital',
-        color: '#ef4444', // Red
+        color: '#ef4444',
         price: 4990,
         base: ['ko', 'gluk', 'moc', 'chol', 'hdl', 'ldl', 'tri', 'alt', 'ast', 'ggt', 'bilirubin', 'alp', 'krea', 'urea', 'acr', 'crp', 'bilkovina', 'ca', 'mg', 'vitD', 'vitB12', 'folat']
     }
 };
 
-// ZÁKLADNÍ POPLATEK (Doprava + Vstup)
-export const SERVICE_FEE = 300; 
-
-// ============================================
-// HEALTH AREAS - Human-friendly descriptions
-// Each area has: base (always included) + optional expansion
-// NEW: Includes pricing for Calc (Base Price / Expansion Price)
-// ============================================
+export const SERVICE_FEE = 300;
 
 export const BLOOD_AREAS = [
     {
@@ -280,12 +270,12 @@ export const BLOOD_AREAS = [
         color: 'text-red-500',
         baseDescription: 'Kontrolujeme hladinu cholesterolu a tuků v krvi. Zjistíme, jestli máte cévy čisté nebo se v nich něco ukládá.',
         baseMarkers: ['chol', 'hdl', 'ldl', 'nonhdl', 'tri'],
-        price: 290, // Cena Základ (X)
+        price: 390,
         expansion: {
             name: 'Rozšířit o detailní kardio',
             description: 'Přidáme pokročilé markery ApoB a Homocystein, které lépe predikují riziko infarktu než samotný cholesterol.',
             markers: ['apob', 'homocystein'],
-            price: 1190, // Cena Rozšíření (Y)
+            price: 690,
         }
     },
     {
@@ -295,12 +285,12 @@ export const BLOOD_AREAS = [
         color: 'text-amber-500',
         baseDescription: 'Měříme jaterní enzymy. Ukazují, jak se játra vyrovnávají s tím, co jíte a pijete.',
         baseMarkers: ['alt', 'ast', 'ggt'],
-        price: 190,
+        price: 290,
         expansion: {
             name: 'Rozšířit o kompletní játra',
             description: 'Přidáme bilirubin a detailní testy slinivky. Důležité, pokud užíváte léky nebo pijete alkohol pravidelněji.',
             markers: ['bilirubin', 'alp', 'ams'],
-            price: 490,
+            price: 390,
         }
     },
     {
@@ -310,13 +300,13 @@ export const BLOOD_AREAS = [
         color: 'text-blue-500',
         baseDescription: 'Kontrolujeme, jak dobře ledviny filtrují krev. Včasné odhalení problémů může předejít dialýze.',
         baseMarkers: ['krea', 'urea'],
-        price: 150,
+        price: 250,
         expansion: {
             name: 'Rozšířit o časnou detekci',
             description: 'Přidáme citlivý test ACR, který odhalí poškození ledvin roky předtím, než se projeví v běžných testech.',
             markers: ['acr'],
             autoExpandForAge: 60,
-            price: 490,
+            price: 450,
         }
     },
     {
@@ -333,7 +323,7 @@ export const BLOOD_AREAS = [
             description: 'Přidáme fT4 a protilátky anti-TPO. Odhalíme, jestli štítnou žlázu nenapadá vlastní imunitní systém.',
             markers: ['ft4', 'anti_tpo'],
             autoExpandForGender: 'female',
-            price: 1090,
+            price: 790,
         }
     },
     {
@@ -343,12 +333,12 @@ export const BLOOD_AREAS = [
         color: 'text-yellow-500',
         baseDescription: 'Kontrolujeme vitamíny a minerály klíčové pro energii. Únava často není ve vaší hlavě, ale v krvi.',
         baseMarkers: ['mg', 'ko'],
-        price: 290,
+        price: 390,
         expansion: {
             name: 'Rozšířit o kompletní vitamíny',
             description: 'Přidáme D vitamin (imunita, kosti), B12 (nervy, paměť), folát a železo. Kompletní obraz vaší vitality.',
             markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
-            price: 1890,
+            price: 1290,
         }
     },
     {
@@ -363,7 +353,7 @@ export const BLOOD_AREAS = [
             name: 'Rozšířit o imunitní profil',
             description: 'Přidáme albumin, celkovou bílkovinu a ultrasenzitivní CRP (hsCRP) pro detekci zánětů/infekcí v těle.',
             markers: ['albumin', 'bilkovina', 'hscrp'],
-            price: 690,
+            price: 590,
         }
     },
     {
@@ -378,7 +368,7 @@ export const BLOOD_AREAS = [
             name: 'Rozšířit o inzulínovou rezistenci',
             description: 'Přidáme C-peptid, inzulín a vypočítáme HOMA-IR index, který je nejlepším ukazatelem inzulínové rezistence.',
             markers: ['cpeptid', 'inzulin', 'homair'],
-            price: 1190,
+            price: 790,
         }
     },
     {
@@ -386,11 +376,13 @@ export const BLOOD_AREAS = [
         name: 'Prostata',
         icon: 'male',
         color: 'text-indigo-500',
-        baseDescription: 'Kontrolujeme PSA - marker zdraví prostaty. Důležité pro muže nad 50 let jako prevence rakoviny.',
+        baseDescription: 'Kontrolujeme PSA - marker zdraví prostaty. Důležité pro muže nad 40 let jako prevence rakoviny.',
         baseMarkers: ['psa'],
         genderFilter: 'male',
-        ageMin: 50,
-        price: 590,
+        ageMin: 40,
+        autoIncludeForAge: 40,
+        autoIncludeForGender: 'male',
+        price: 490,
         expansion: null
     }
 ];
@@ -404,8 +396,8 @@ export const BODY_AREAS = [
         included: true,
         baseDescription: 'Měříme přesné složení těla pomocí InBody - kolik máte svalů, tuku a vody.',
         tests: ['inbody'],
-        price: 400, // Rozpočítáno ze Service Fee
-        cost: 50    // Podíl na paušálu sestry (300 Kč)
+        price: 400,
+        cost: 50
     },
     {
         id: 'blood_pressure',
@@ -415,8 +407,8 @@ export const BODY_AREAS = [
         included: true,
         baseDescription: 'Měříme krevní tlak jako základ prevence kardiovaskulárních onemocnění.',
         tests: ['bp'],
-        price: 250,
-        cost: 50 // Podíl na paušálu
+        price: 190,
+        cost: 50
     },
     {
         id: 'strength',
@@ -426,8 +418,8 @@ export const BODY_AREAS = [
         included: true,
         baseDescription: 'Měříme sílu stisku ruky. Síla stisku překvapivě predikuje délku života.',
         tests: ['grip'],
-        price: 250,
-        cost: 50 // Podíl na paušálu
+        price: 190,
+        cost: 50
     },
     {
         id: 'mobility',
@@ -435,28 +427,12 @@ export const BODY_AREAS = [
         icon: 'accessibility_new',
         color: 'text-cyan-500',
         baseDescription: 'Testujeme sílu nohou a celkovou fyzickou zdatnost.',
-        price: 0, 
-        cost: 0,  // Screening
+        price: 0,
+        cost: 0,
         expansion: {
             name: 'SPPB (chůze, rovnováha)',
             description: 'Provedeme Short Physical Performance Battery - standardizovanou sadu testů.',
             tests: ['sppb_balance', 'sppb_walk', 'chairstand'],
-            price: 590,
-            cost: 50 // Příplatek za extra čas (v rámci návštěvy)
-        }
-    },
-    {
-        id: 'heart',
-        name: 'Srdce a rytmus',
-        icon: 'ecg',
-        color: 'text-red-400',
-        hidden: true, // Temporarily hidden
-        baseDescription: 'Provedeme jednosvodové EKG přímo u vás doma.',
-        price: 0,
-        expansion: {
-            name: 'Přidat EKG vyšetření',
-            description: 'Pomocí chytrého zařízení změříme srdeční rytmus.',
-            tests: ['ekg'],
             price: 490,
             cost: 50
         }
@@ -466,47 +442,30 @@ export const BODY_AREAS = [
 export const HEAD_AREAS = [
     {
         id: 'memory',
-        name: 'Odborný screening (MoCA)',
+        name: 'Odborný screening (MoCA), Diagnostika paměti',
         icon: 'psychology',
         color: 'text-violet-500',
-        baseDescription: 'Včasná detekce změn paměti a myšlení.',
+        baseDescription: '90 % změn v mozku začíná nenápadně. Odhalte je dříve, než ovlivní každodenní život.',
         price: 0,
         cost: 0,
         expansion: {
-            name: 'MoCA test',
+            name: 'Odborný screening (MoCA)',
             description: 'Montreal Cognitive Assessment - komplexní screening paměti.',
             tests: ['moca'],
             autoExpandForAge: 65,
-            price: 590,
-            cost: 50 // Příplatek za extra čas
-        }
-    },
-    {
-        id: 'hearing',
-        name: 'Sluch',
-        icon: 'hearing',
-        color: 'text-blue-400',
-        hidden: true, // Temporarily hidden
-        baseDescription: 'Screening sluchu pomocí kalibrovaných sluchátek.',
-        price: 0,
-        expansion: {
-            name: 'Přidat test sluchu',
-            description: 'Pomocí tabletu a sluchátek otestujeme sluch.',
-            tests: ['audio'],
             price: 490,
             cost: 50
         }
     }
 ];
 
-// Keep old exports for backwards compatibility
 export const PHYSICAL_TESTS = [
     { id: 'inbody', name: 'InBody měření', price: 0, included: true },
     { id: 'grip', name: 'Grip Strength', price: 0, included: true },
     { id: 'bp', name: 'Tlak & Puls', price: 0, included: true },
-    { id: 'sppb_balance', name: 'SPPB – rovnováha', price: 100 },
-    { id: 'sppb_walk', name: 'SPPB – chůze', price: 100 },
-    { id: 'chairstand', name: 'Chair-Stand test', price: 150 },
+    { id: 'sppb_balance', name: 'SPPB Rovnováha', price: 100 },
+    { id: 'sppb_walk', name: 'SPPB Chůze', price: 100 },
+    { id: 'chairstand', name: 'Test vstávání ze židle', price: 150 },
     { id: 'ekg', name: 'EKG', price: 350 },
 ];
 
