@@ -40,6 +40,7 @@ export const FlowView = () => {
     const [showDetails, setShowDetails] = useState({});
     const [expandedSymptoms, setExpandedSymptoms] = useState({});
     const [devMode, setDevMode] = useState(false); // Dev mode to show marker labels
+    const [showCostsAndMargin, setShowCostsAndMargin] = useState(false); // Toggle to show costs and margins
     const [hasKomfiMembership, setHasKomfiMembership] = useState(false); // Komfi membership discount
 
     useEffect(() => {
@@ -572,12 +573,8 @@ export const FlowView = () => {
                     >
                         <div className="p-6">
                             <div className="flex items-start gap-4">
-                                {/* Checkbox */}
-                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${isExpanded ? 'bg-primary text-primary-on' : 'border-2 border-surface-outline'}`}>
-                                    {isExpanded && <Icon name="check" size={18} />}
-                                </div>
                                 {/* Icon */}
-                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${isExpanded ? 'bg-primary-container' : 'bg-surface-container-high'}`}>
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${isExpanded ? 'bg-primary-container' : 'bg-surface-container-high'}`}>
                                     <Icon name={area.icon} size={32} className={isExpanded ? 'text-primary' : (area.color || 'text-surface-on-variant')} />
                                 </div>
                                 {/* Content */}
@@ -603,12 +600,10 @@ export const FlowView = () => {
                                         </div>
                                     )}
                                 </div>
-                                {/* Price */}
-                                {expansionPrice > 0 && (
-                                    <div className={`text-lg font-bold ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
-                                        {expansionPrice} Kč
-                                    </div>
-                                )}
+                                {/* Checkbox - top right */}
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isExpanded ? 'bg-primary text-primary-on' : 'border-2 border-surface-outline'}`}>
+                                    {isExpanded && <Icon name="check" size={18} />}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -642,13 +637,14 @@ export const FlowView = () => {
                                             </button>
                                         )}
                                     </div>
-                                    {/* Included badge - top right */}
+                                    {/* Included checkbox - top right */}
                                     {hasBaseContent && (
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-tertiary/20 flex-shrink-0">
-                                            <div className="w-4 h-4 rounded flex items-center justify-center bg-tertiary text-tertiary-on">
+                                        <div className="flex-shrink-0">
+                                            {/* All base content cards (baseMarkers or tests with included) get small gray checkbox */}
+                                            {/* because they're always included and can't be toggled off */}
+                                            <div className="w-5 h-5 rounded-md flex items-center justify-center bg-neutral-400 text-white opacity-70">
                                                 <Icon name="check" size={12} />
                                             </div>
-                                            <span className="text-xs text-tertiary font-bold">Zahrnuto</span>
                                         </div>
                                     )}
                                 </div>
@@ -711,8 +707,8 @@ export const FlowView = () => {
                                 : 'bg-surface-dim/50 border-surface-outline-variant hover:bg-surface-container-high'}`}
                         >
                             <div className="flex items-center gap-3">
-                                {/* Checkbox */}
-                                <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all ${isExpanded
+                                {/* Checkbox - round */}
+                                <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isExpanded
                                     ? 'bg-primary text-primary-on'
                                     : 'border-2 border-surface-outline hover:border-primary'
                                     }`}>
@@ -723,10 +719,10 @@ export const FlowView = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className={`font-semibold text-sm ${isExpanded ? 'text-primary' : 'text-surface-on'}`}>
-                                            {area.expansion.name}
+                                            Rozšířit o více testů?
                                         </span>
                                         <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container-high text-surface-on-variant">
-                                            +{expansionCount} {expansionCount === 1 ? 'test' : 'testy'}
+                                            +{expansionCount} {expansionCount === 1 ? 'test' : expansionCount >= 2 && expansionCount <= 4 ? 'testy' : 'testů'}
                                         </span>
                                     </div>
                                     {/* Description only shows when selected */}
@@ -737,9 +733,9 @@ export const FlowView = () => {
                                     )}
                                 </div>
 
-                                {/* Price */}
-                                {expansionPrice > 0 && (
-                                    <div className={`text-sm font-bold flex-shrink-0 ${isExpanded ? 'text-primary' : 'text-surface-on-variant'}`}>
+                                {/* Price - only when selected */}
+                                {isExpanded && expansionPrice > 0 && (
+                                    <div className="text-sm font-bold flex-shrink-0 text-primary">
                                         +{expansionPrice} Kč
                                     </div>
                                 )}
@@ -964,9 +960,22 @@ export const FlowView = () => {
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Main content */}
                         <div className="lg:col-span-2 space-y-6">
-                            <div>
-                                <h2 className="text-4xl font-display mb-2 text-surface-on">Souhrn balíčku</h2>
-                                <p className="text-surface-on-variant text-lg">Zkontrolujte si vybrané testy. Kliknutím na záložku můžete upravit výběr.</p>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-4xl font-display mb-2 text-surface-on">Souhrn balíčku</h2>
+                                    <p className="text-surface-on-variant text-lg">Zkontrolujte si vybrané testy. Kliknutím na záložku můžete upravit výběr.</p>
+                                </div>
+                                {/* Toggle for costs and margin - dev feature */}
+                                <button
+                                    onClick={() => setShowCostsAndMargin(!showCostsAndMargin)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${showCostsAndMargin
+                                            ? 'bg-primary text-primary-on'
+                                            : 'bg-surface-container-high text-surface-on-variant hover:bg-surface-container-highest'
+                                        }`}
+                                >
+                                    <Icon name={showCostsAndMargin ? 'visibility' : 'visibility_off'} size={18} />
+                                    <span>{showCostsAndMargin ? 'Skrýt náklady' : 'Zobrazit náklady'}</span>
+                                </button>
                             </div>
 
                             {/* Tabs for editing */}

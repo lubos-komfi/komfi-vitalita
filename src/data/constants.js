@@ -1,43 +1,51 @@
+// Definice dostupných laboratoří
+export const LABS = [
+    { id: 'citylab', name: 'CityLab', color: 'text-amber-600 bg-amber-50 border-amber-200' },
+    { id: 'euc', name: 'EUC', color: 'text-blue-600 bg-blue-50 border-blue-200' },
+    { id: 'synlab', name: 'Synlab', color: 'text-green-600 bg-green-50 border-green-200' },
+    { id: 'unilabs', name: 'Unilabs', color: 'text-rose-600 bg-rose-50 border-rose-200' }
+];
 
 export const LAB_COSTS = {
-    ko: { name: 'Krevní obraz + diferenciál', price: 55 },
-    gluk: { name: 'Glukóza v plazmě', price: 14 },
-    crp: { name: 'CRP (Zánět)', price: 122 },
-    alt: { name: 'ALT (Játra)', price: 20 },
-    ast: { name: 'AST (Játra)', price: 20 },
-    ggt: { name: 'GGT (Játra)', price: 22 },
-    ca: { name: 'Vápník (Ca)', price: 20 },
-    mg: { name: 'Hořčík (Mg)', price: 25 },
-    chol: { name: 'Cholesterol celkový', price: 25 },
-    tri: { name: 'Triacylglyceroly', price: 28 },
-    hdl: { name: 'HDL Cholesterol', price: 45 },
-    ldl: { name: 'LDL Cholesterol', price: 38 },
-    nonhdl: { name: 'non-HDL Cholesterol', price: 0 }, // Calculated from chol - hdl
-    krea: { name: 'Kreatinin', price: 18 },
-    urea: { name: 'Urea', price: 18 },
-    bilkovina: { name: 'Celková bílkovina', price: 20 },
-    albumin: { name: 'Albumin', price: 25 },
-    hscrp: { name: 'Ultracitlivé CRP (hsCRP)', price: 180 },
-    ams: { name: 'Amyláza (AMS)', price: 35 },
-    psa: { name: 'PSA (Prostata)', price: 190 },
-    tsh: { name: 'TSH (Štítná žláza)', price: 140 },
-    moc: { name: 'Moč chem. + sediment', price: 30 },
-    acr: { name: 'ACR (Albumin/Kreatinin v moči)', price: 150 },
-    apob: { name: 'Apolipoprotein B', price: 200 },
-    homocystein: { name: 'Homocystein', price: 250 },
-    hba1c: { name: 'HbA1c (Dlouhý cukr)', price: 180 },
-    cpeptid: { name: 'C-Peptid', price: 220 },
-    inzulin: { name: 'Inzulín', price: 220 },
-    homair: { name: 'HOMA-IR (Inzulínová rezistence)', price: 0 }, // Calculated from gluk + inzulin
-    ferritin: { name: 'Ferritin (Zásoba železa)', price: 190 },
-    vitD: { name: 'Vitamín D', price: 360 },
-    vitB12: { name: 'Vitamín B12', price: 190 },
-    ft4: { name: 'fT4 (Volný tyroxin)', price: 160 },
-    anti_tpo: { name: 'Anti-TPO (Autoimunita)', price: 280 },
-    bilirubin: { name: 'Bilirubin celkový', price: 18 },
-    alp: { name: 'ALP (Játra/Kosti)', price: 20 },
-    folat: { name: 'Folát (Kys. listová)', price: 190 },
-    zinek: { name: 'Zinek', price: 120 },
+    // Struktura: { name: '...', prices: { citylab: X, euc: Y, synlab: Z, unilabs: W }, price: BEST_OFFER }
+    ko: { name: 'Krevní obraz + diferenciál', prices: { citylab: 55, euc: 91, synlab: 91, unilabs: 134 }, price: 55 },
+    gluk: { name: 'Glukóza v plazmě', prices: { citylab: 14, euc: 40, synlab: 49, unilabs: 44 }, price: 14 },
+    crp: { name: 'CRP (Zánět)', prices: { citylab: 122, euc: 169, synlab: 141.3, unilabs: 160 }, price: 122 },
+    alt: { name: 'ALT (Játra)', prices: { citylab: 20, euc: 21, synlab: 18.9, unilabs: 20 }, price: 18.9 },
+    ast: { name: 'AST (Játra)', prices: { citylab: 20, euc: 21, synlab: 18.9, unilabs: 20 }, price: 18.9 },
+    ggt: { name: 'GGT (Játra)', prices: { citylab: 22, euc: 21, synlab: 20.7, unilabs: 22 }, price: 20.7 },
+    ca: { name: 'Vápník (Ca)', prices: { citylab: 21, euc: 21, synlab: 19.8, unilabs: 20 }, price: 19.8 },
+    mg: { name: 'Hořčík (Mg)', prices: { citylab: 21, euc: 20, synlab: 19.8, unilabs: 20 }, price: 19.8 },
+    chol: { name: 'Cholesterol celkový', prices: { citylab: 24, euc: 41, synlab: 51.3, unilabs: 48 }, price: 24 },
+    tri: { name: 'Triacylglyceroly', prices: { citylab: 24, euc: 40, synlab: 35, unilabs: 38 }, price: 24 },
+    hdl: { name: 'HDL Cholesterol', prices: { citylab: 45, euc: 58, synlab: 58, unilabs: 115 }, price: 45 },
+    ldl: { name: 'LDL Cholesterol', prices: { citylab: 70, euc: 91, synlab: 155.7, unilabs: 140 }, price: 70 },
+    nonhdl: { name: 'non-HDL Cholesterol', prices: { citylab: 0, euc: 0, synlab: 0, unilabs: 0 }, price: 0 },
+    krea: { name: 'Kreatinin', prices: { citylab: 18, euc: 21, synlab: 17.1, unilabs: 19 }, price: 17.1 },
+    urea: { name: 'Urea', prices: { citylab: 19, euc: 22, synlab: 18, unilabs: 20 }, price: 18 },
+    bilkovina: { name: 'Celková bílkovina', prices: { citylab: 16, euc: 21, synlab: 15.3, unilabs: 18 }, price: 15.3 },
+    albumin: { name: 'Albumin', prices: { citylab: 17, euc: 21, synlab: 16.2, unilabs: 19 }, price: 16.2 },
+    hscrp: { name: 'Ultracitlivé CRP (hsCRP)', prices: { citylab: 180, euc: 200, synlab: 190, unilabs: 195 }, price: 180 },
+    ams: { name: 'Amyláza (AMS)', prices: { citylab: 48, euc: 50, synlab: 44.1, unilabs: 48 }, price: 44.1 },
+    psa: { name: 'PSA (Prostata)', prices: { citylab: 190, euc: 260, synlab: 243.9, unilabs: 350 }, price: 190 },
+    tsh: { name: 'TSH (Štítná žláza)', prices: { citylab: 140, euc: 180, synlab: 170, unilabs: 175 }, price: 140 },
+    moc: { name: 'Moč chem. + sediment', prices: { citylab: 30, euc: 39, synlab: 35, unilabs: 38 }, price: 30 },
+    acr: { name: 'ACR (Albumin/Kreatinin v moči)', prices: { citylab: 115, euc: 150, synlab: 134.1, unilabs: 140 }, price: 115 },
+    apob: { name: 'Apolipoprotein B', prices: { citylab: 180, euc: 200, synlab: 190, unilabs: 195 }, price: 180 },
+    homocystein: { name: 'Homocystein', prices: { citylab: 250, euc: 280, synlab: 270, unilabs: 275 }, price: 250 },
+    hba1c: { name: 'HbA1c (Dlouhý cukr)', prices: { citylab: 160, euc: 225, synlab: 189, unilabs: 200 }, price: 160 },
+    cpeptid: { name: 'C-Peptid', prices: { citylab: 220, euc: 250, synlab: 240, unilabs: 245 }, price: 220 },
+    inzulin: { name: 'Inzulín', prices: { citylab: 220, euc: 250, synlab: 240, unilabs: 245 }, price: 220 },
+    homair: { name: 'HOMA-IR', prices: { citylab: 0, euc: 0, synlab: 0, unilabs: 0 }, price: 0 },
+    ferritin: { name: 'Ferritin (Zásoba železa)', prices: { citylab: 190, euc: 250, synlab: 218.7, unilabs: 230 }, price: 190 },
+    vitD: { name: 'Vitamín D', prices: { citylab: 360, euc: 490, synlab: 405, unilabs: 640 }, price: 360 },
+    vitB12: { name: 'Vitamín B12', prices: { citylab: 190, euc: 260, synlab: 243.9, unilabs: 355 }, price: 190 },
+    ft4: { name: 'fT4 (Volný tyroxin)', prices: { citylab: 140, euc: 180, synlab: 178.2, unilabs: 180 }, price: 140 },
+    anti_tpo: { name: 'Anti-TPO (Autoimunita)', prices: { citylab: 280, euc: 310, synlab: 300, unilabs: 305 }, price: 280 },
+    bilirubin: { name: 'Bilirubin celkový', prices: { citylab: 17, euc: 21, synlab: 16.2, unilabs: 19 }, price: 16.2 },
+    alp: { name: 'ALP (Játra/Kosti)', prices: { citylab: 19, euc: 21, synlab: 18, unilabs: 20 }, price: 18 },
+    folat: { name: 'Folát (Kys. listová)', prices: { citylab: 190, euc: 260, synlab: 241.2, unilabs: 355 }, price: 190 },
+    zinek: { name: 'Zinek', prices: { citylab: 120, euc: 180, synlab: 173.1, unilabs: 250 }, price: 120 },
 };
 
 export const MARKER_AVAILABILITY = {
@@ -53,7 +61,7 @@ export const MARKER_AVAILABILITY = {
     tri: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     hdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     ldl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
-    nonhdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'], // Same as chol/hdl
+    nonhdl: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'], 
     krea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd', 'm_enr'],
     urea: ['m_prem', 'm_zakl', 'm_reg', 'm_srd'],
     bilkovina: ['m_prem', 'm_reg'],
@@ -65,7 +73,7 @@ export const MARKER_AVAILABILITY = {
     hba1c: ['m_prem', 'm_reg', 'm_enr'],
     cpeptid: ['m_prem', 'm_reg', 'm_enr'],
     inzulin: ['m_prem', 'm_reg', 'm_enr'],
-    homair: ['m_prem', 'm_reg', 'm_enr'], // Calculated marker
+    homair: ['m_prem', 'm_reg', 'm_enr'], 
     ferritin: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitD: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
     vitB12: ['m_prem', 'm_reg', 'm_str', 'm_vla', 'm_enr'],
@@ -198,8 +206,8 @@ export const HEALTH_CATEGORIES = [
         questionStep: 2,
         module: {
             id: 'mobility',
-            name: 'SPPB testy',
-            desc: 'Rovnováha, chůze, síla nohou',
+            name: 'SPPB (chůze, rovnováha)',
+            desc: 'Standardizované testy fyzické zdatnosti',
             markers: [],
             question: 'Máte problémy s chůzí nebo rovnováhou?',
             symptoms: ['Nejistá chůze', 'Strach z pádu', 'Slabost v nohách', 'Závratě'],
@@ -255,11 +263,13 @@ export const PROFILES_SPEC = {
     }
 };
 
-export const SERVICE_FEE = 1200;
+// ZÁKLADNÍ POPLATEK (Doprava + Vstup)
+export const SERVICE_FEE = 300; 
 
 // ============================================
 // HEALTH AREAS - Human-friendly descriptions
 // Each area has: base (always included) + optional expansion
+// NEW: Includes pricing for Calc (Base Price / Expansion Price)
 // ============================================
 
 export const BLOOD_AREAS = [
@@ -270,10 +280,12 @@ export const BLOOD_AREAS = [
         color: 'text-red-500',
         baseDescription: 'Kontrolujeme hladinu cholesterolu a tuků v krvi. Zjistíme, jestli máte cévy čisté nebo se v nich něco ukládá.',
         baseMarkers: ['chol', 'hdl', 'ldl', 'nonhdl', 'tri'],
+        price: 290, // Cena Základ (X)
         expansion: {
             name: 'Rozšířit o detailní kardio',
             description: 'Přidáme pokročilé markery ApoB a Homocystein, které lépe predikují riziko infarktu než samotný cholesterol.',
             markers: ['apob', 'homocystein'],
+            price: 1190, // Cena Rozšíření (Y)
         }
     },
     {
@@ -283,10 +295,12 @@ export const BLOOD_AREAS = [
         color: 'text-amber-500',
         baseDescription: 'Měříme jaterní enzymy. Ukazují, jak se játra vyrovnávají s tím, co jíte a pijete.',
         baseMarkers: ['alt', 'ast', 'ggt'],
+        price: 190,
         expansion: {
             name: 'Rozšířit o kompletní játra',
             description: 'Přidáme bilirubin a detailní testy slinivky. Důležité, pokud užíváte léky nebo pijete alkohol pravidelněji.',
             markers: ['bilirubin', 'alp', 'ams'],
+            price: 490,
         }
     },
     {
@@ -296,10 +310,13 @@ export const BLOOD_AREAS = [
         color: 'text-blue-500',
         baseDescription: 'Kontrolujeme, jak dobře ledviny filtrují krev. Včasné odhalení problémů může předejít dialýze.',
         baseMarkers: ['krea', 'urea'],
+        price: 150,
         expansion: {
             name: 'Rozšířit o časnou detekci',
             description: 'Přidáme citlivý test ACR, který odhalí poškození ledvin roky předtím, než se projeví v běžných testech.',
             markers: ['acr'],
+            autoExpandForAge: 60,
+            price: 490,
         }
     },
     {
@@ -310,10 +327,13 @@ export const BLOOD_AREAS = [
         baseDescription: 'Kontrolujeme hormony štítné žlázy. Ovlivňují váhu, energii, náladu i kvalitu vlasů a pokožky.',
         baseMarkers: ['tsh'],
         genderFilter: 'female',
+        price: 390,
         expansion: {
             name: 'Rozšířit o autoimunitu',
             description: 'Přidáme fT4 a protilátky anti-TPO. Odhalíme, jestli štítnou žlázu nenapadá vlastní imunitní systém.',
             markers: ['ft4', 'anti_tpo'],
+            autoExpandForGender: 'female',
+            price: 1090,
         }
     },
     {
@@ -323,10 +343,12 @@ export const BLOOD_AREAS = [
         color: 'text-yellow-500',
         baseDescription: 'Kontrolujeme vitamíny a minerály klíčové pro energii. Únava často není ve vaší hlavě, ale v krvi.',
         baseMarkers: ['mg', 'ko'],
+        price: 290,
         expansion: {
             name: 'Rozšířit o kompletní vitamíny',
             description: 'Přidáme D vitamin (imunita, kosti), B12 (nervy, paměť), folát a železo. Kompletní obraz vaší vitality.',
             markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
+            price: 1890,
         }
     },
     {
@@ -336,10 +358,12 @@ export const BLOOD_AREAS = [
         color: 'text-orange-500',
         baseDescription: 'Měříme CRP - univerzální ukazatel zánětu. Chronický zánět urychluje stárnutí a způsobuje nemoci.',
         baseMarkers: ['crp', 'ko'],
+        price: 490,
         expansion: {
             name: 'Rozšířit o imunitní profil',
             description: 'Přidáme albumin, celkovou bílkovinu a ultrasenzitivní CRP (hsCRP) pro detekci zánětů/infekcí v těle.',
             markers: ['albumin', 'bilkovina', 'hscrp'],
+            price: 690,
         }
     },
     {
@@ -349,10 +373,12 @@ export const BLOOD_AREAS = [
         color: 'text-pink-500',
         baseDescription: 'Měříme hladinu cukru v krvi. Včasné odhalení prediabetu může zabránit rozvoji cukrovky.',
         baseMarkers: ['gluk', 'hba1c'],
+        price: 490,
         expansion: {
             name: 'Rozšířit o inzulínovou rezistenci',
             description: 'Přidáme C-peptid, inzulín a vypočítáme HOMA-IR index, který je nejlepším ukazatelem inzulínové rezistence.',
             markers: ['cpeptid', 'inzulin', 'homair'],
+            price: 1190,
         }
     },
     {
@@ -363,6 +389,8 @@ export const BLOOD_AREAS = [
         baseDescription: 'Kontrolujeme PSA - marker zdraví prostaty. Důležité pro muže nad 50 let jako prevence rakoviny.',
         baseMarkers: ['psa'],
         genderFilter: 'male',
+        ageMin: 50,
+        price: 590,
         expansion: null
     }
 ];
@@ -374,8 +402,10 @@ export const BODY_AREAS = [
         icon: 'scale',
         color: 'text-teal-500',
         included: true,
-        baseDescription: 'Měříme přesné složení těla pomocí InBody - kolik máte svalů, tuku a vody. Váha sama nic neříká.',
+        baseDescription: 'Měříme přesné složení těla pomocí InBody - kolik máte svalů, tuku a vody.',
         tests: ['inbody'],
+        price: 400, // Rozpočítáno ze Service Fee
+        cost: 50    // Podíl na paušálu sestry (300 Kč)
     },
     {
         id: 'blood_pressure',
@@ -385,6 +415,8 @@ export const BODY_AREAS = [
         included: true,
         baseDescription: 'Měříme krevní tlak jako základ prevence kardiovaskulárních onemocnění.',
         tests: ['bp'],
+        price: 250,
+        cost: 50 // Podíl na paušálu
     },
     {
         id: 'strength',
@@ -394,18 +426,23 @@ export const BODY_AREAS = [
         included: true,
         baseDescription: 'Měříme sílu stisku ruky. Síla stisku překvapivě predikuje délku života.',
         tests: ['grip'],
+        price: 250,
+        cost: 50 // Podíl na paušálu
     },
     {
         id: 'mobility',
         name: 'Fyzická zdatnost',
         icon: 'accessibility_new',
         color: 'text-cyan-500',
-        baseDescription: 'Testujeme sílu nohou a celkovou fyzickou zdatnost. Klíčové pro predikci soběstačnosti u seniorů.',
-        price: 350,
+        baseDescription: 'Testujeme sílu nohou a celkovou fyzickou zdatnost.',
+        price: 0, 
+        cost: 0,  // Screening
         expansion: {
-            name: 'Přidat SPPB testy',
-            description: 'Provedeme Short Physical Performance Battery - standardizovanou sadu testů: rovnováha, rychlost chůze, vstávání ze židle. Používá se celosvětově.',
+            name: 'SPPB (chůze, rovnováha)',
+            description: 'Provedeme Short Physical Performance Battery - standardizovanou sadu testů.',
             tests: ['sppb_balance', 'sppb_walk', 'chairstand'],
+            price: 590,
+            cost: 50 // Příplatek za extra čas (v rámci návštěvy)
         }
     },
     {
@@ -414,12 +451,14 @@ export const BODY_AREAS = [
         icon: 'ecg',
         color: 'text-red-400',
         hidden: true, // Temporarily hidden
-        baseDescription: 'Provedeme jednosvodové EKG přímo u vás doma. Odhalíme fibrilaci síní, která způsobuje mrtvice.',
-        price: 350,
+        baseDescription: 'Provedeme jednosvodové EKG přímo u vás doma.',
+        price: 0,
         expansion: {
             name: 'Přidat EKG vyšetření',
-            description: 'Pomocí chytrého zařízení změříme srdeční rytmus. Fibrilace síní často nemá žádné příznaky, ale zvyšuje riziko mrtvice 5×.',
+            description: 'Pomocí chytrého zařízení změříme srdeční rytmus.',
             tests: ['ekg'],
+            price: 490,
+            cost: 50
         }
     }
 ];
@@ -427,15 +466,19 @@ export const BODY_AREAS = [
 export const HEAD_AREAS = [
     {
         id: 'memory',
-        name: 'Paměť a myšlení',
+        name: 'Odborný screening (MoCA)',
         icon: 'psychology',
         color: 'text-violet-500',
-        baseDescription: 'Rychlý screening kognitivních funkcí pomocí testu hodin. Odhalíme změny paměti dříve, než si jich všimne okolí.',
-        price: 200,
+        baseDescription: 'Včasná detekce změn paměti a myšlení.',
+        price: 0,
+        cost: 0,
         expansion: {
-            name: 'Přidat Mini-Cog test',
-            description: 'Provedeme Mini-Cog test - nakreslíte hodiny a vzpomenete si na 3 slova. Trvá 3 minuty a má vysokou citlivost pro časnou demenci.',
-            tests: ['minicog'],
+            name: 'MoCA test',
+            description: 'Montreal Cognitive Assessment - komplexní screening paměti.',
+            tests: ['moca'],
+            autoExpandForAge: 65,
+            price: 590,
+            cost: 50 // Příplatek za extra čas
         }
     },
     {
@@ -444,12 +487,14 @@ export const HEAD_AREAS = [
         icon: 'hearing',
         color: 'text-blue-400',
         hidden: true, // Temporarily hidden
-        baseDescription: 'Screening sluchu pomocí kalibrovaných sluchátek. Nedoslýchavost vede k sociální izolaci a urychluje demenci.',
-        price: 250,
+        baseDescription: 'Screening sluchu pomocí kalibrovaných sluchátek.',
+        price: 0,
         expansion: {
             name: 'Přidat test sluchu',
-            description: 'Pomocí tabletu a sluchátek otestujeme sluch na různých frekvencích. Odhalíme i mírné ztráty, které si člověk neuvědomuje.',
+            description: 'Pomocí tabletu a sluchátek otestujeme sluch.',
             tests: ['audio'],
+            price: 490,
+            cost: 50
         }
     }
 ];
@@ -459,16 +504,16 @@ export const PHYSICAL_TESTS = [
     { id: 'inbody', name: 'InBody měření', price: 0, included: true },
     { id: 'grip', name: 'Grip Strength', price: 0, included: true },
     { id: 'bp', name: 'Tlak & Puls', price: 0, included: true },
-    { id: 'sppb_balance', name: 'SPPB - Rovnováha', price: 100 },
-    { id: 'sppb_walk', name: 'SPPB - Chůze', price: 100 },
+    { id: 'sppb_balance', name: 'SPPB – rovnováha', price: 100 },
+    { id: 'sppb_walk', name: 'SPPB – chůze', price: 100 },
     { id: 'chairstand', name: 'Chair-Stand test', price: 150 },
     { id: 'ekg', name: 'EKG', price: 350 },
 ];
 
 export const COGNITIVE_TESTS = [
+    { id: 'moca', name: 'MoCA (Montreal Cognitive Assessment)', price: 300 },
     { id: 'minicog', name: 'Mini-Cog', price: 200 },
     { id: 'audio', name: 'Audiometrie', price: 250 },
 ];
 
-// Deprecated - kept for backwards compatibility
 export const BLOOD_TEST_GROUPS = BLOOD_AREAS;

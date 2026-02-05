@@ -37,7 +37,7 @@ const AppLayout = () => {
     { path: '/competition', label: 'Konkurence', icon: 'compare_arrows' },
     { path: '/measurements', label: 'Měření', icon: 'monitor_heart', hidden: true },
     { path: '/analysis', label: 'Analýza', icon: 'analytics', hidden: true },
-    { path: '/margins', label: 'Kalkulačka', icon: 'calculate', hidden: true }
+    { path: '/margins', label: 'Kalkulačka', icon: 'calculate' }
   ];
 
   return (
