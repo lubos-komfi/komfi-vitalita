@@ -304,16 +304,16 @@ export const SERVICE_FEE = 300;
 
 export const HEALTH_CATEGORIES = [
     { id: 'fitness', title: 'Funkční tělesná zdatnost a Služby', icon: 'accessibility_new', module: null },
-    { id: 'obesity', title: 'Nadváha a metabolismus', icon: 'monitor_weight', questionStep: 1, module: { id: 'obesity', question: 'Trápí vás nadváha nebo obezita?' } },
-    { id: 'heart', title: 'Srdce a cévy', icon: 'favorite', questionStep: 1, module: { id: 'cardio', question: 'Máte v rodině srdeční onemocnění?' } },
-    { id: 'diabetes', title: 'Metabolismus cukrů (Diabetes)', icon: 'cookie', questionStep: 1, module: { id: 'diabetes', question: 'Máte obavy z cukrovky?' } },
-    { id: 'liver', title: 'Játra a slinivka', icon: 'water_drop', questionStep: 1, module: { id: 'liver', question: 'Chcete zkontrolovat játra podrobněji?' } },
-    { id: 'kidney', title: 'Ledviny', icon: 'water', questionStep: 1, module: { id: 'kidney', question: 'Máte obavy o zdraví ledvin?' } },
-    { id: 'minerals', title: 'Hladina minerálů a vitamínů', icon: 'wb_sunny', questionStep: 2, module: { id: 'vitamins', question: 'Cítíte se trvale unavení?' } },
-    { id: 'immunity', title: 'Záněty a imunita', icon: 'bloodtype', questionStep: 2, module: { id: 'inflammation', question: 'Máte časté infekce nebo záněty?' } },
-    { id: 'thyroid', title: 'Štítná žláza', icon: 'psychology', questionStep: 2, module: { id: 'thyroid', question: 'Máte problémy se štítnou žlázou?' } },
-    { id: 'mobility', title: 'Pohyblivost a rovnováha', icon: 'accessibility_new', questionStep: 2, module: { id: 'mobility', question: 'Máte problémy s chůzí nebo rovnováhou?' } },
-    { id: 'memory', title: 'Paměť a myšlení', icon: 'psychology_alt', questionStep: 2, module: { id: 'memory', question: 'Trápí vás zapomnětlivost?' } }
+    { id: 'obesity', title: 'Nadváha a metabolismus', icon: 'monitor_weight', questionStep: 1, module: { id: 'obesity', question: 'Trápí vás nadváha nebo obezita?', symptoms: ['BMI nad 25', 'Tuk v oblasti břicha', 'Únava po jídle', 'Problémy s hubnutím'] } },
+    { id: 'heart', title: 'Srdce a cévy', icon: 'favorite', questionStep: 1, module: { id: 'cardio', question: 'Máte v rodině srdeční onemocnění?', symptoms: ['Bušení srdce', 'Bolesti na hrudi', 'Dušnost při námaze', 'Vysoký tlak'] } },
+    { id: 'diabetes', title: 'Metabolismus cukrů (Diabetes)', icon: 'cookie', questionStep: 1, module: { id: 'diabetes', question: 'Máte obavy z cukrovky?', symptoms: ['Nadváha', 'Velká žízeň', 'Časté močení', 'Výkyvy energie po jídle'] } },
+    { id: 'liver', title: 'Játra a slinivka', icon: 'water_drop', questionStep: 1, module: { id: 'liver', question: 'Chcete zkontrolovat játra podrobněji?', symptoms: ['Pravidelný alkohol', 'Užívání léků', 'Bolesti břicha', 'Zažívací potíže'] } },
+    { id: 'kidney', title: 'Ledviny', icon: 'water', questionStep: 1, module: { id: 'kidney', question: 'Máte obavy o zdraví ledvin?', symptoms: ['Otoky nohou', 'Problémy s močením', 'Vysoký tlak', 'Diabetes v rodině'] } },
+    { id: 'minerals', title: 'Hladina minerálů a vitamínů', icon: 'wb_sunny', questionStep: 2, module: { id: 'vitamins', question: 'Cítíte se trvale unavení?', symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty'] } },
+    { id: 'immunity', title: 'Záněty a imunita', icon: 'bloodtype', questionStep: 2, module: { id: 'inflammation', question: 'Máte časté infekce nebo záněty?', symptoms: ['Časté nachlazení', 'Pomalé hojení ran', 'Opakované infekce', 'Zvýšená teplota'] } },
+    { id: 'thyroid', title: 'Štítná žláza', icon: 'psychology', questionStep: 2, module: { id: 'thyroid', question: 'Máte problémy se štítnou žlázou?', symptoms: ['Změny váhy', 'Padání vlasů', 'Nervozita', 'Citlivost na chlad/teplo'] } },
+    { id: 'mobility', title: 'Pohyblivost a rovnováha', icon: 'accessibility_new', questionStep: 2, module: { id: 'mobility', question: 'Máte problémy s chůzí nebo rovnováhou?', symptoms: ['Nejistá chůze', 'Strach z pádu', 'Slabost v nohách', 'Závratě'] } },
+    { id: 'memory', title: 'Paměť a myšlení', icon: 'psychology_alt', questionStep: 2, module: { id: 'memory', question: 'Trápí vás zapomnětlivost?', symptoms: ['Zapomínání jmen', 'Hledání slov', 'Ztráta orientace', 'Problémy s koncentrací'] } }
 ];
 
 export const FREQUENCIES = [
