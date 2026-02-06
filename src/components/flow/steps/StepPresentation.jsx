@@ -71,6 +71,40 @@ const MembershipCheckbox = ({ checked, onChange }) => {
     );
 };
 
+const MobileBottomBar = () => {
+    const [visible, setVisible] = useState(true);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollBottom = window.innerHeight + window.scrollY;
+            const docHeight = document.documentElement.scrollHeight;
+            // Hide when near bottom (within 100px)
+            setVisible(docHeight - scrollBottom > 100);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToBottom = () => {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    };
+
+    if (!visible) return null;
+
+    return (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-primary p-3 shadow-2xl z-40">
+            <button
+                onClick={scrollToBottom}
+                className="w-full flex items-center justify-center gap-2 text-primary-on font-bold text-base"
+            >
+                Objednat
+                <Icon name="keyboard_arrow_down" size={20} className="text-primary-on" />
+            </button>
+        </div>
+    );
+};
+
 export const StepPresentation = ({
     client,
     textVariant,
@@ -198,7 +232,7 @@ export const StepPresentation = ({
                     <h3 className="font-display text-xl text-surface-on">{title}</h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {sorted.map(area => (
                         <AreaCard key={area.id} area={area} expandedIds={expandedIds} />
                     ))}
@@ -214,7 +248,7 @@ export const StepPresentation = ({
     const totalTestCount = bloodTestCount + bodyTestCount + headTestCount;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-4 pb-24 md:pb-4 animate-fade-in-up">
+        <div className="max-w-7xl mx-auto px-4 py-4 pb-16 lg:pb-4 animate-fade-in-up">
             <div className="grid lg:grid-cols-5 gap-8">
                 {/* Left column - main content (~65%) */}
                 <div className="lg:col-span-3">
@@ -362,6 +396,19 @@ export const StepPresentation = ({
                                     </div>
                                     <span className="text-surface-on">Sdílení zprávy s lékařem</span>
                                 </div>
+
+                                {!hasKomfiMembership && (
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center flex-shrink-0">
+                                            <img src="/img/komfi_icon.svg" alt="" className="w-4 h-4" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                            <Icon name="card_membership" size={16} className="text-primary hidden" />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-surface-on">Komfi členství zdarma</span>
+                                            <span className="text-surface-on-variant block text-xs">v hodnotě 2 108 Kč na první rok</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -393,25 +440,8 @@ export const StepPresentation = ({
                 </div>
             </div>
 
-            {/* Mobile sticky CTA */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-surface-outline-variant p-4 shadow-2xl z-40">
-                <div className="flex items-center justify-between max-w-lg mx-auto">
-                    <div>
-                        <div className="text-xs text-surface-on-variant">Celkem / rok</div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-2xl font-display font-bold text-primary">
-                                {pricing.totalPrice.toLocaleString('cs-CZ')} Kč
-                            </span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onNext}
-                        className="px-6 py-3 rounded-2xl bg-primary text-primary-on font-bold shadow-lg"
-                    >
-                        Objednat
-                    </button>
-                </div>
-            </div>
+            {/* Mobile scroll-to-bottom CTA */}
+            <MobileBottomBar />
 
             {/* Test Detail Modal - portal to body for full viewport overlay */}
             {modalArea && createPortal(

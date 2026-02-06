@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ProgressBar = ({ currentStep, totalSteps = 7, onStepClick }) => {
     return (
-        <div className="fixed bottom-3 left-3 z-50 flex items-center gap-1 opacity-30 hover:opacity-80 transition-opacity">
+        <div className="hidden lg:flex fixed bottom-3 left-3 z-50 items-center gap-1 opacity-30 hover:opacity-80 transition-opacity">
             {Array.from({ length: totalSteps }, (_, i) => {
                 const step = i;
                 const isCompleted = currentStep > step;
