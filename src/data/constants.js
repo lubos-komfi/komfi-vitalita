@@ -1,3 +1,46 @@
+// Text variants for "Pro koho" (self vs parents)
+export const TEXT_VARIANTS = {
+    self: {
+        questionPrefix: 'Máte', possessive: 'vaše', pronoun: 'vás',
+        genderQ: 'Jaké je vaše pohlaví?', ageQ: 'Kolik je vám let?',
+        resultIntro: 'Na základě vašich odpovědí jsme vám připravili'
+    },
+    parents: {
+        questionPrefix: 'Má váš blízký', possessive: 'jeho/její', pronoun: 'vašeho blízkého',
+        genderQ: 'Jaké je pohlaví vašeho blízkého?', ageQ: 'Kolik je vašemu blízkému let?',
+        resultIntro: 'Na základě odpovědí jsme pro vašeho blízkého připravili'
+    }
+};
+
+// Payment options
+export const PAYMENT_OPTIONS = {
+    upfront: { id: 'upfront', label: 'Zaplatit najednou', discount: 0.05, splits: 1 },
+    split: { id: 'split', label: 'Rozdělit na 2 splátky', discount: 0, splits: 2 },
+};
+
+// How it works steps
+export const HOW_IT_WORKS_STEPS = [
+    { icon: 'quiz', title: 'Odpovíte na pár otázek', desc: 'Krátký dotazník o vašem zdraví a životním stylu. Na základě odpovědí vám připravíme nabídku na míru.' },
+    { icon: 'home_health', title: 'Přijďte k nám nebo přijedeme za vámi', desc: 'Zdravotní sestra provede odběr krve a měření tělesných funkcí u vás doma nebo v našem centru.' },
+    { icon: 'phone_iphone', title: 'Výsledky uvidíte v aplikaci', desc: 'Do několika dní vám zpřístupníme kompletní výsledky s AI interpretací v přehledné aplikaci.' },
+    { icon: 'restaurant', title: 'Upravíte životosprávu', desc: 'Na základě výsledků dostanete personalizovaná doporučení pro zlepšení zdraví a prevenci.' },
+    { icon: 'event_repeat', title: 'Za 6 měsíců follow-up', desc: 'Pravidelným sledováním zachytíme trendy a změny dříve, než se projeví jako problémy.' },
+];
+
+// Module to area mapping
+export const MODULE_TO_AREA_MAP = {
+    obesity: { type: 'blood', areaId: 'energy' },
+    cardio: { type: 'blood', areaId: 'cardio' },
+    diabetes: { type: 'blood', areaId: 'diabetes' },
+    liver: { type: 'blood', areaId: 'liver' },
+    kidney: { type: 'blood', areaId: 'kidney' },
+    vitamins: { type: 'blood', areaId: 'energy' },
+    inflammation: { type: 'blood', areaId: 'inflammation' },
+    thyroid: { type: 'blood', areaId: 'thyroid' },
+    mobility: { type: 'body', areaId: 'mobility' },
+    memory: { type: 'head', areaId: 'memory' },
+};
+
 // Definice dostupných laboratoří
 export const LABS = [
     { id: 'citylab', name: 'CityLab', color: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -100,7 +143,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'Inzulín, HOMA-IR, HbA1c (Dlouhý cukr), Cholesterol celkový, Triacylglyceroly',
             markers: ['inzulin', 'homair', 'hba1c', 'chol', 'tri'],
             question: 'Trápí vás nadváha nebo obezita?',
-            symptoms: ['BMI nad 25', 'Tuk v oblasti břicha', 'Únava po jídle', 'Problémy s hubnutím']
+            questionParents: 'Trápí vašeho blízkého nadváha nebo obezita?',
+            symptoms: ['BMI nad 25', 'Tuk v oblasti břicha', 'Únava po jídle', 'Problémy s hubnutím'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o nadváhu a metabolismus.'
         }
     },
     {
@@ -113,7 +158,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'Apolipoprotein B, Homocystein',
             markers: ['apob', 'homocystein'],
             question: 'Máte v rodině srdeční onemocnění?',
-            symptoms: ['Bušení srdce', 'Bolesti na hrudi', 'Dušnost při námaze', 'Vysoký tlak']
+            questionParents: 'Má váš blízký v rodině srdeční onemocnění?',
+            symptoms: ['Bušení srdce', 'Bolesti na hrudi', 'Dušnost při námaze', 'Vysoký tlak'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o srdce a cévy.'
         }
     },
     {
@@ -126,7 +173,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'HbA1c (Dlouhý cukr), C-Peptid',
             markers: ['hba1c', 'cpeptid'],
             question: 'Máte obavy z cukrovky?',
-            symptoms: ['Nadváha', 'Velká žízeň', 'Časté močení', 'Výkyvy energie po jídle']
+            questionParents: 'Má váš blízký obavy z cukrovky?',
+            symptoms: ['Nadváha', 'Velká žízeň', 'Časté močení', 'Výkyvy energie po jídle'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o cukrovku.'
         }
     },
     {
@@ -139,7 +188,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'Bilirubin celkový, ALP (Játra/Kosti)',
             markers: ['bilirubin', 'alp'],
             question: 'Chcete zkontrolovat játra podrobněji?',
-            symptoms: ['Pravidelný alkohol', 'Užívání léků', 'Bolesti břicha', 'Zažívací potíže']
+            questionParents: 'Chcete zkontrolovat játra vašeho blízkého podrobněji?',
+            symptoms: ['Pravidelný alkohol', 'Užívání léků', 'Bolesti břicha', 'Zažívací potíže'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o játra a trávení.'
         }
     },
     {
@@ -152,8 +203,10 @@ export const HEALTH_CATEGORIES = [
             desc: 'ACR (Albumin/Kreatinin v moči)',
             markers: ['acr'],
             question: 'Máte obavy o zdraví ledvin?',
+            questionParents: 'Má váš blízký obavy o zdraví ledvin?',
             symptoms: ['Otoky nohou', 'Problémy s močením', 'Vysoký tlak', 'Diabetes v rodině'],
-            targetArea: 'kidney'
+            targetArea: 'kidney',
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o ledviny.'
         }
     },
     {
@@ -166,7 +219,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'Vitamín D, Vitamín B12, Folát (Kys. listová), Ferritin (Zásoba železa)',
             markers: ['vitD', 'vitB12', 'folat', 'ferritin'],
             question: 'Cítíte se trvale unavení?',
-            symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty']
+            questionParents: 'Cítí se váš blízký trvale unavený?',
+            symptoms: ['Dlouhodobá únava', 'Slabost', 'Padání vlasů', 'Lámavé nehty'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o energii a vitalitu.'
         }
     },
     {
@@ -179,8 +234,10 @@ export const HEALTH_CATEGORIES = [
             desc: 'Krevní obraz + diferenciál, Celková bílkovina, Ferritin (Zásoba železa)',
             markers: ['ko', 'bilkovina', 'ferritin'],
             question: 'Máte časté infekce nebo záněty?',
+            questionParents: 'Má váš blízký časté infekce nebo záněty?',
             symptoms: ['Časté nachlazení', 'Pomalé hojení ran', 'Opakované infekce', 'Zvýšená teplota'],
-            targetArea: 'inflammation'
+            targetArea: 'inflammation',
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o záněty a imunitu.'
         }
     },
     {
@@ -193,7 +250,9 @@ export const HEALTH_CATEGORIES = [
             desc: 'fT4 (Volný tyroxin), Anti-TPO (Autoimunita)',
             markers: ['ft4', 'anti_tpo'],
             question: 'Máte problémy se štítnou žlázou?',
-            symptoms: ['Změny váhy', 'Padání vlasů', 'Nervozita', 'Citlivost na chlad/teplo']
+            questionParents: 'Má váš blízký problémy se štítnou žlázou?',
+            symptoms: ['Změny váhy', 'Padání vlasů', 'Nervozita', 'Citlivost na chlad/teplo'],
+            whyTemplate: 'Kromě základních markerů ({baseNames}) jsme přidali i {expansionNames}, protože jste uvedli obavy o štítnou žlázu.'
         }
     },
     { id: 'bones', title: 'Kosti a zuby', icon: 'health_and_safety', base: ['ca'], module: null },
@@ -208,9 +267,11 @@ export const HEALTH_CATEGORIES = [
             desc: 'Standardizované testy fyzické zdatnosti',
             markers: [],
             question: 'Máte problémy s chůzí nebo rovnováhou?',
+            questionParents: 'Má váš blízký problémy s chůzí nebo rovnováhou?',
             symptoms: ['Nejistá chůze', 'Strach z pádu', 'Slabost v nohách', 'Závratě'],
             targetType: 'body',
-            targetArea: 'mobility'
+            targetArea: 'mobility',
+            whyTemplate: 'Přidali jsme testy pohyblivosti, protože jste uvedli obavy o chůzi a rovnováhu.'
         }
     },
     {
@@ -223,9 +284,11 @@ export const HEALTH_CATEGORIES = [
             desc: 'Screening paměti',
             markers: [],
             question: 'Trápí vás zapomnětlivost?',
+            questionParents: 'Trápí vašeho blízkého zapomnětlivost?',
             symptoms: ['Zapomínání jmen', 'Hledání slov', 'Ztráta orientace', 'Problémy s koncentrací'],
             targetType: 'head',
-            targetArea: 'memory'
+            targetArea: 'memory',
+            whyTemplate: 'Přidali jsme screening paměti, protože jste uvedli obavy o zapomnětlivost.'
         }
     }
 ];
@@ -269,7 +332,9 @@ export const BLOOD_AREAS = [
         icon: 'favorite',
         color: 'text-red-500',
         baseDescription: 'Kontrolujeme hladinu cholesterolu a tuků v krvi. Zjistíme, jestli máte cévy čisté nebo se v nich něco ukládá.',
+        detailDescription: 'Kardiovaskulární onemocnění jsou nejčastější příčinou úmrtí v ČR. Měříme lipidový profil — cholesterol, HDL, LDL a triglyceridy — které ukazují, jak zdravé jsou vaše cévy. Vysoký LDL cholesterol se postupně ukládá ve stěnách cév a zvyšuje riziko infarktu nebo mrtvice.\n\nVýsledky mohou odhalit dyslipidemii, aterosklerózu v počátečním stadiu nebo zvýšené kardiovaskulární riziko. Včasný záchyt umožňuje úpravu životosprávy nebo nasazení léčby dříve, než dojde k vážným komplikacím.',
         baseMarkers: ['chol', 'hdl', 'ldl', 'nonhdl', 'tri'],
+        indicates: 'dyslipidemii, aterosklerózu nebo zvýšené kardiovaskulární riziko',
         price: 390,
         expansion: {
             name: 'Rozšířit o detailní kardio',
@@ -284,7 +349,9 @@ export const BLOOD_AREAS = [
         icon: 'water_drop',
         color: 'text-amber-500',
         baseDescription: 'Měříme jaterní enzymy. Ukazují, jak se játra vyrovnávají s tím, co jíte a pijete.',
+        detailDescription: 'Játra jsou hlavní detoxikační orgán těla. Měříme jaterní enzymy ALT, AST a GGT, které se uvolňují do krve při poškození jaterních buněk. I mírné zvýšení může signalizovat tichý problém.\n\nVýsledky mohou odhalit ztukovatění jater, poškození alkoholem, vliv léků na játra nebo počínající jaterní onemocnění. Játra mají obrovskou schopnost regenerace — pokud problém odhalíme včas.',
         baseMarkers: ['alt', 'ast', 'ggt'],
+        indicates: 'ztukovatění jater, poškození alkoholem nebo vliv léků',
         price: 290,
         expansion: {
             name: 'Rozšířit o kompletní játra',
@@ -299,7 +366,9 @@ export const BLOOD_AREAS = [
         icon: 'water',
         color: 'text-blue-500',
         baseDescription: 'Kontrolujeme, jak dobře ledviny filtrují krev. Včasné odhalení problémů může předejít dialýze.',
+        detailDescription: 'Ledviny filtrují krev a odstraňují odpadní látky. Měříme kreatinin a ureu — základní ukazatele funkce ledvin. Problém je, že ledviny mohou ztratit až 50 % funkce bez jakýchkoli příznaků.\n\nVýsledky mohou odhalit sníženou filtrační schopnost ledvin, dehydrataci nebo počínající chronické onemocnění ledvin. U lidí s diabetem nebo vysokým tlakem je pravidelná kontrola obzvlášť důležitá.',
         baseMarkers: ['krea', 'urea'],
+        indicates: 'sníženou funkci ledvin nebo počínající chronické onemocnění',
         price: 250,
         expansion: {
             name: 'Rozšířit o časnou detekci',
@@ -315,7 +384,9 @@ export const BLOOD_AREAS = [
         icon: 'psychology',
         color: 'text-purple-500',
         baseDescription: 'Kontrolujeme hormony štítné žlázy. Ovlivňují váhu, energii, náladu i kvalitu vlasů a pokožky.',
+        detailDescription: 'Štítná žláza produkuje hormony, které řídí metabolismus celého těla. Měříme TSH — hormon, který reguluje činnost štítné žlázy. Poruchy štítné žlázy postihují až 10 % populace, častěji ženy.\n\nVýsledky mohou odhalit hypotyreózu (únava, přibírání, deprese) nebo hypertyreózu (hubnutí, neklid, bušení srdce). Správná léčba dramaticky zlepšuje kvalitu života.',
         baseMarkers: ['tsh'],
+        indicates: 'hypotyreózu, hypertyreózu nebo autoimunitní onemocnění štítné žlázy',
         genderFilter: 'female',
         price: 390,
         expansion: {
@@ -332,7 +403,9 @@ export const BLOOD_AREAS = [
         icon: 'bolt',
         color: 'text-yellow-500',
         baseDescription: 'Kontrolujeme vitamíny a minerály klíčové pro energii. Únava často není ve vaší hlavě, ale v krvi.',
+        detailDescription: 'Únava, slabost nebo špatná koncentrace často souvisejí s nedostatkem vitamínů a minerálů. Měříme hořčík a krevní obraz, které jsou základem vaší energie a vitality.\n\nVýsledky mohou odhalit anémii, nedostatek železa, nízký vitamin D nebo B12. Tyto deficity se snadno řeší doplňky stravy nebo úpravou jídelníčku — ale nejdřív je potřeba je najít.',
         baseMarkers: ['mg', 'ko'],
+        indicates: 'anémii, nedostatek železa, vitaminu D nebo B12',
         price: 390,
         expansion: {
             name: 'Rozšířit o kompletní vitamíny',
@@ -347,7 +420,9 @@ export const BLOOD_AREAS = [
         icon: 'local_fire_department',
         color: 'text-orange-500',
         baseDescription: 'Měříme CRP - univerzální ukazatel zánětu. Chronický zánět urychluje stárnutí a způsobuje nemoci.',
+        detailDescription: 'Chronický zánět je tichý nepřítel — nepocítíte ho, ale urychluje stárnutí a přispívá k rozvoji srdečních chorob, diabetu i rakoviny. Měříme CRP a krevní obraz jako první ukazatele zánětu.\n\nVýsledky mohou odhalit skrytý zánět, infekci nebo autoimunitní aktivitu. Chronicky zvýšený CRP je varovný signál, který je důvod řešit — i když se cítíte dobře.',
         baseMarkers: ['crp', 'ko'],
+        indicates: 'skrytý zánět, infekci nebo autoimunitní aktivitu',
         price: 490,
         expansion: {
             name: 'Rozšířit o imunitní profil',
@@ -362,7 +437,9 @@ export const BLOOD_AREAS = [
         icon: 'cookie',
         color: 'text-pink-500',
         baseDescription: 'Měříme hladinu cukru v krvi. Včasné odhalení prediabetu může zabránit rozvoji cukrovky.',
+        detailDescription: 'Cukrovka 2. typu se vyvíjí roky, než se projeví. Měříme glykémii nalačno a glykovaný hemoglobin (HbA1c), který ukazuje průměrnou hladinu cukru za poslední 3 měsíce.\n\nVýsledky mohou odhalit prediabetes nebo počínající cukrovku. V prediabetické fázi lze vývoj zvrátit změnou životosprávy — bez léků. Proto je včasná detekce tak cenná.',
         baseMarkers: ['gluk', 'hba1c'],
+        indicates: 'prediabetes, inzulínovou rezistenci nebo počínající cukrovku',
         price: 490,
         expansion: {
             name: 'Rozšířit o inzulínovou rezistenci',
@@ -377,7 +454,9 @@ export const BLOOD_AREAS = [
         icon: 'male',
         color: 'text-indigo-500',
         baseDescription: 'Kontrolujeme PSA - marker zdraví prostaty. Důležité pro muže nad 40 let jako prevence rakoviny.',
+        detailDescription: 'PSA (prostatický specifický antigen) je marker zdraví prostaty. Měříme ho u mužů nad 40 let jako součást prevence rakoviny prostaty — druhého nejčastějšího nádoru u mužů.\n\nZvýšené PSA nemusí vždy znamenat rakovinu — může jít o zánět nebo zvětšení prostaty. Ale včasný záchyt umožňuje další vyšetření a případnou léčbu v počáteční fázi, kdy je nejúčinnější.',
         baseMarkers: ['psa'],
+        indicates: 'zvětšení prostaty, zánět nebo počínající nádor',
         genderFilter: 'male',
         ageMin: 40,
         autoIncludeForAge: 40,
@@ -395,6 +474,8 @@ export const BODY_AREAS = [
         color: 'text-teal-500',
         included: true,
         baseDescription: 'Měříme přesné složení těla pomocí InBody - kolik máte svalů, tuku a vody.',
+        indicates: 'nerovnováhu mezi svalovinou a tukem, viscerální obezitu nebo dehydrataci',
+        detailDescription: 'InBody je přesné měření složení těla pomocí bioimpedance. Na rozdíl od váhy rozliší, kolik máte svalové hmoty, tuku, viscerálního tuku a vody.\n\nVýsledky ukáží, zda je vaše hmotnost zdravá — i člověk s normální vahou může mít příliš málo svalů a příliš mnoho vnitřního tuku. Sledování v čase pak ukazuje, jestli vaše snaha o zdravější životosprávu skutečně funguje.',
         tests: ['inbody'],
         price: 400,
         cost: 50
@@ -406,6 +487,8 @@ export const BODY_AREAS = [
         color: 'text-rose-500',
         included: true,
         baseDescription: 'Měříme krevní tlak jako základ prevence kardiovaskulárních onemocnění.',
+        indicates: 'hypertenzi, pre-hypertenzi nebo kardiovaskulární riziko',
+        detailDescription: 'Vysoký krevní tlak je „tichý zabiják" — nemá příznaky, ale poškozuje cévy, srdce, ledviny i mozek. Měříme systolický a diastolický tlak jako základ kardiovaskulární prevence.\n\nVýsledky ukáží, zda je váš tlak v normě, mírně zvýšený (pre-hypertenze) nebo vyžaduje pozornost. Pravidelné měření je klíčové, protože tlak kolísá v průběhu dne.',
         tests: ['bp'],
         price: 190,
         cost: 50
@@ -417,6 +500,8 @@ export const BODY_AREAS = [
         color: 'text-emerald-500',
         included: true,
         baseDescription: 'Měříme sílu stisku ruky. Síla stisku překvapivě predikuje délku života.',
+        indicates: 'sarkopenii, podvýživu nebo celkový pokles kondice',
+        detailDescription: 'Síla stisku ruky (grip strength) je překvapivě silným prediktorem celkového zdraví a délky života. Měříme ji pomocí dynamometru — rychle, bezbolestně a s vysokou vypovídací hodnotou.\n\nNízká síla stisku může signalizovat úbytek svalové hmoty (sarkopenii), podvýživu nebo celkový pokles kondice. U starších lidí silně koreluje s rizikem pádů a ztrátou soběstačnosti.',
         tests: ['grip'],
         price: 190,
         cost: 50
@@ -427,6 +512,8 @@ export const BODY_AREAS = [
         icon: 'accessibility_new',
         color: 'text-cyan-500',
         baseDescription: 'Testujeme sílu nohou a celkovou fyzickou zdatnost.',
+        indicates: 'riziko pádů, sníženou fyzickou zdatnost nebo ztrátu soběstačnosti',
+        detailDescription: 'Fyzická zdatnost měřená pomocí SPPB (Short Physical Performance Battery) testuje rovnováhu, rychlost chůze a sílu nohou. Tyto testy jsou zlatým standardem funkční zdatnosti.\n\nVýsledky predikují riziko pádů, hospitalizace a ztráty soběstačnosti. Pravidelné testování umožňuje cíleně posilovat slabé stránky a udržet si pohyblivost do vysokého věku.',
         price: 0,
         cost: 0,
         expansion: {
@@ -446,6 +533,8 @@ export const HEAD_AREAS = [
         icon: 'psychology',
         color: 'text-violet-500',
         baseDescription: '90 % změn v mozku začíná nenápadně. Odhalte je dříve, než ovlivní každodenní život.',
+        indicates: 'mírnou kognitivní poruchu nebo počínající neurodegenerativní změny',
+        detailDescription: 'Montreal Cognitive Assessment (MoCA) je krátký, ale komplexní test kognitivních funkcí — paměti, pozornosti, orientace, jazyka a vizuálně-prostorových schopností.\n\nTest dokáže odhalit mírnou kognitivní poruchu (MCI), která může být předstupněm demence. Až 90 % neurodegenerativních změn začíná nenápadně. Včasná detekce umožňuje intervenci, která může zpomalit nebo zastavit progresi.',
         price: 0,
         cost: 0,
         expansion: {
